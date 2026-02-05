@@ -90,7 +90,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
     <img
     	class="md-img"
     	src="img/photo__800-600-webp.jpg"
-    	srcset="img/photo__800-600-webp.webp 800w, img/photo__800-600-webp.jpg 800w"
+    	srcset="img/photo__800-600.webp 800w, img/photo__800-600-webp.jpg 800w"
     	width="800"
     	height="600"
     	alt="Portrait of Eric Lowry"
