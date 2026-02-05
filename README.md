@@ -1,7 +1,8 @@
 # [Marked Responsive Images](https://github.com/ELowry/MarkedResponsiveImages)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![npm](https://img.shields.io/npm/v/marked-responsive-images)](https://www.npmjs.com/package/marked-responsive-images)
+[![GitHub repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/ELowry/MarkedResponsiveImages)
+[![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
 
 An extension for [Marked](https://marked.js.org/) ([github](https://github.com/markedjs/marked), [npm](https://www.npmjs.com/package/marked)) designed to generate responsive images by injecting `srcset` and `sizes` attributes based on simple filename conventions.
 
@@ -15,40 +16,22 @@ npm install marked-responsive-images
 
 ## Usage
 
-### ES Modules (Node.js / Bundlers)
-
 ```javascript
+// Default factory export (recommended)
 import { marked } from 'marked';
-import { MarkedResponsiveImages } from 'marked-responsive-images';
+import markedResponsiveImages from 'marked-responsive-images';
 
-// Initialize the extension
-const responsive = new MarkedResponsiveImages();
+/*
+// or use UMD scripts
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked-responsive-images/dist/index.umd.js"></script>
+*/
 
 // Register with marked
-marked.use(responsive.config);
+marked.use(markedResponsiveImages());
 
 // Render markdown
 const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
-```
-
-### Browser (CDN)
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-<script src="https://unpkg.com/marked-responsive-images"></script>
-
-<script>
-	// Initialize the extension
-	const responsive = new markedResponsiveImages.MarkedResponsiveImages();
-
-	// Register with marked
-	marked.use(responsive.config);
-
-	// Render markdown
-	document.getElementById('content').innerHTML = marked.parse(
-		'![My Image](assets/hero__400-300_800-600.jpg)',
-	);
-</script>
 ```
 
 ## Naming Convention
