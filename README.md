@@ -102,7 +102,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
 You can configure global options for **Marked Responsive Images** using:
 
 ```js
-const responsive = new MarkedResponsiveImages({
+marked.use(markedResponsiveImages(
 	sizes: 'string'
 	lazy: true | false
 	debug: true | false
