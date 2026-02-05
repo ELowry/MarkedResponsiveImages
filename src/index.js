@@ -171,11 +171,15 @@ class MarkedResponsiveImages {
 			.split('_')
 			.map((token) => {
 				const parts = token.split('-');
+				const width = parseInt(parts[0], 10);
+				const height = parseInt(parts[1], 10);
+				const ext = parts[2] ? `.${parts[2]}` : originalExtention;
+
 				return {
-					width: parseInt(parts[0], 10),
-					height: parseInt(parts[1], 10),
-					ext: parts[2] ? `.${parts[2]}` : originalExtention,
-					token: token,
+					width: width,
+					height: height,
+					ext: ext,
+					token: `${width}-${height}`,
 				};
 			})
 			.sort((a, b) => a.width - b.width);
