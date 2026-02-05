@@ -265,6 +265,6 @@ class MarkedResponsiveImages {
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
  * @returns {Object} Marked extension object (renderer config).
  */
-export default function responsiveImages(options = {}) {
+export default function markedResponsiveImages(options = {}) {
 	return new MarkedResponsiveImages(options).config;
 }
