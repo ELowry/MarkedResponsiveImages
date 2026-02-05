@@ -48,9 +48,9 @@ class MarkedResponsiveImages {
 	 * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
 	 */
 	constructor(options = {}) {
-		this.#defaultSizes = options.sizes || null;
-		this.#debug = options.debug || false;
-		this.#lazy = options.lazy || true;
+		this.#defaultSizes = options.sizes ?? null;
+		this.#debug = options.debug ?? false;
+		this.#lazy = options.lazy ?? true;
 
 		this.#regex =
 			/^(.*)__((?:\d+-\d+(?:-[a-z0-9]+)?)(?:_(?:\d+-\d+(?:-[a-z0-9]+)?))*)(\.[^.]+)$/i;
