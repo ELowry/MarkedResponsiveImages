@@ -5,12 +5,13 @@ on:
         tags:
             - 'v*'
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     publish:
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            id-token: write
 
         steps:
             - name: Checkout Code
@@ -52,5 +53,3 @@ jobs:
 
             - name: Publish to NPM
               run: npm publish --access public
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
