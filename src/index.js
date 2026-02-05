@@ -201,8 +201,37 @@ class MarkedResponsiveImages {
 	 */
 	#generateSrcset(variants, base, pathname, isAbsolute, origin, search, hash, originalHref) {
 		const filename = pathname.split('/').pop();
+		const originalExtMatch = filename.match(/(\.[^.]+)$/);
+		const originalExt = originalExtMatch ? originalExtMatch[1] : '';
 
-		return variants
+		// Deduplicate variants by width, preferring a non-original extension
+		const chosen = new Map();
+
+		for (const variant of variants) {
+			const existing = chosen.get(variant.width);
+			if (!existing) {
+				chosen.set(variant.width, variant);
+				continue;
+			}
+
+			if (existing.ext === variant.ext) {
+				this.#warn(`Duplicate variant omitted: ${base}__${variant.token}${variant.ext}`);
+				continue;
+			}
+
+			if (existing.ext === originalExt && !variantIsDefault) {
+				chosen.set(variant.width, variant);
+				continue;
+			}
+
+			if (!variant.ext === originalExt && variantIsDefault) {
+				continue;
+			}
+		}
+
+		const prunedVariants = Array.from(chosen.values()).sort((a, b) => a.width - b.width);
+
+		return prunedVariants
 			.map((variant) => {
 				const variantFilename = `${base}__${variant.token}${variant.ext}`;
 				const variantPathname = pathname.replace(filename, variantFilename);

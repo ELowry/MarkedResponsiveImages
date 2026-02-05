@@ -34,6 +34,9 @@ marked.use(markedResponsiveImages());
 const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 ```
 
+> [!NOTE]  
+> If a variant exists with the same dimensions but a different extension (for example `webp` alongside a `jpg`), the variant will be used in the `srcset` and the original extension will be omitted for better performance on modern browsers.
+
 ## Naming Convention
 
 ### Naming the Main File
@@ -75,7 +78,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
     	srcset="img/photo__400-300.jpg 400w, img/photo__400-300_800-600.jpg 800w"
     	width="800"
     	height="600"
-    	alt="Portrait of Eric Lowry"
+    	alt="Responsive image example"
     />
     ```
 
@@ -93,7 +96,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
     	srcset="img/photo__800-600.webp 800w, img/photo__800-600-webp.jpg 800w"
     	width="800"
     	height="600"
-    	alt="Portrait of Eric Lowry"
+    	alt="Web opitimized photo example"
     />
     ```
 
