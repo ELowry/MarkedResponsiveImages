@@ -254,4 +254,17 @@ class MarkedResponsiveImages {
 	}
 }
 
-export { MarkedResponsiveImages };
+/**
+ * A Marked extension class for handling responsive images.
+ * Encapsulates parsing logic and configuration for generating srcset attributes.
+ * Usage: `marked.use(responsiveImages({ /* options *\/ }))`
+ *
+ * @param {Object} [options={}] - Configuration options.
+ * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
+ * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
+ * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
+ * @returns {Object} Marked extension object (renderer config).
+ */
+export default function responsiveImages(options = {}) {
+	return new MarkedResponsiveImages(options).config;
+}

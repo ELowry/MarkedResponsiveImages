@@ -16,40 +16,22 @@ npm install marked-responsive-images
 
 ## Usage
 
-### ES Modules (Node.js / Bundlers)
-
 ```javascript
+// Default factory export (recommended)
 import { marked } from 'marked';
-import { MarkedResponsiveImages } from 'marked-responsive-images';
+import markedResponsiveImages from 'marked-responsive-images';
 
-// Initialize the extension
-const responsive = new MarkedResponsiveImages();
+/*
+// or use UMD scripts
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked-responsive-images/dist/index.umd.js"></script>
+*/
 
 // Register with marked
-marked.use(responsive.config);
+marked.use(markedResponsiveImages());
 
 // Render markdown
 const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
-```
-
-### Browser (CDN)
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-<script src="https://unpkg.com/marked-responsive-images"></script>
-
-<script>
-	// Initialize the extension
-	const responsive = new markedResponsiveImages.MarkedResponsiveImages();
-
-	// Register with marked
-	marked.use(responsive.config);
-
-	// Render markdown
-	document.getElementById('content').innerHTML = marked.parse(
-		'![My Image](assets/hero__400-300_800-600.jpg)',
-	);
-</script>
 ```
 
 ## Naming Convention
