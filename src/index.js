@@ -219,12 +219,15 @@ class MarkedResponsiveImages {
 				continue;
 			}
 
-			if (existing.ext === originalExt && !variantIsDefault) {
+			const existingIsDefault = existing.ext === originalExt;
+			const variantIsDefault = variant.ext === originalExt;
+
+			if (existingIsDefault && !variantIsDefault) {
 				chosen.set(variant.width, variant);
 				continue;
 			}
 
-			if (!variant.ext === originalExt && variantIsDefault) {
+			if (!existingIsDefault && variantIsDefault) {
 				continue;
 			}
 		}
