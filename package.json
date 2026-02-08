@@ -1,6 +1,6 @@
 {
 	"name": "marked-responsive-images",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "A robust marked extension for handling responsive images with srcset generation.",
 	"type": "module",
 	"repository": {
@@ -15,18 +15,21 @@
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.module.js",
 	"unpkg": "./dist/index.umd.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"import": "./dist/index.module.js",
-			"require": "./dist/index.cjs"
+			"require": "./dist/index.cjs",
+			"types": "./dist/index.d.ts"
 		}
 	},
 	"scripts": {
-		"build": "microbundle",
+		"test": "node --test",
+		"build": "microbundle&& node -e \"require('fs').copyFileSync('src/index.d.ts', 'dist/index.d.ts')\"",
 		"dev": "microbundle watch",
 		"lint": "eslint src",
-		"format": "prettier --write \"src/**/*.js\"",
-		"check-format": "prettier --check \"src/**/*.js\"",
+		"format": "prettier --write \"src/**/*.{js,ts}\"",
+		"check-format": "prettier --check \"src/**/*.{js,ts}\"",
 		"prepublishOnly": "npm run build"
 	},
 	"files": [
@@ -48,6 +51,7 @@
 	"devDependencies": {
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
+		"marked": "^17.0.1",
 		"microbundle": "^0.15.1",
 		"prettier": "^3.8.1",
 		"prettier-plugin-css-order": "^2.2.0"
