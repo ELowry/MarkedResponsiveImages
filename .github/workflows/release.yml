@@ -52,3 +52,40 @@ jobs:
 
             - name: Publish to NPM
               run: npm publish --access public --provenance
+
+            - name: Upload Build Artifacts
+              uses: actions/upload-artifact@v6
+              with:
+                  name: build-assets
+                  path: dist/
+
+    github-release:
+        needs: publish
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Download Build Artifacts
+              uses: actions/download-artifact@v7
+              with:
+                  name: build-assets
+                  path: dist
+
+            - name: Prepare Draft Assets for Release
+              run: |
+                  mkdir -p release-assets
+                  cp dist/index.umd.js release-assets/marked-responsive-images.umd.js
+                  cp dist/index.module.js release-assets/marked-responsive-images.esm.js
+                  cp dist/index.cjs release-assets/marked-responsive-images.cjs
+                  cp dist/index.umd.js.map release-assets/marked-responsive-images.umd.js.map
+                  cp dist/index.d.ts release-assets/index.d.ts
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: release-assets/*
+                  draft: true
+                  generate_release_notes: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

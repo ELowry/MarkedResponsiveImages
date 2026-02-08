@@ -113,15 +113,27 @@ class MarkedResponsiveImages {
 				href,
 			);
 			const largest = variants[variants.length - 1];
-			const sizesAttr = this.#defaultSizes ? ` sizes="${this.#defaultSizes}"` : '';
-			const titleAttr = title ? ` title="${title}"` : '';
+			const sizesAttr = this.#defaultSizes
+				? ` sizes="${this.#stringEscape(this.#defaultSizes)}"`
+				: '';
+			const titleAttr = title ? ` title="${this.#stringEscape(title)}"` : '';
 			const lazyLoadingAttr = this.#lazy ? ` loading="lazy"` : '';
 
-			return `<img class="md-img" src="${href}" srcset="${srcset}"${sizesAttr} width="${largest.width}" height="${largest.height}" alt="${text || ''}"${titleAttr}${lazyLoadingAttr}>`;
+			return `<img class="md-img" src="${href}" srcset="${srcset}"${sizesAttr} width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttr}${lazyLoadingAttr}>`;
 		} catch (e) {
 			this.#error(`Error generating HTML for ${filename}`, e);
 			return false;
 		}
+	}
+
+	/**
+	 * Escapes double quotes in a string for safe HTML attribute usage.
+	 * @private
+	 * @param {string} string - The string to escape.
+	 * @returns {string} The escaped string.
+	 */
+	#stringEscape(string) {
+		return (string || '').replace(/"/g, '&quot;');
 	}
 
 	/**
@@ -237,7 +249,8 @@ class MarkedResponsiveImages {
 		return prunedVariants
 			.map((variant) => {
 				const variantFilename = `${base}__${variant.token}${variant.ext}`;
-				const variantPathname = pathname.replace(filename, variantFilename);
+				const variantPathname =
+					pathname.substring(0, pathname.length - filename.length) + variantFilename;
 				let finalUrl;
 
 				if (isAbsolute) {

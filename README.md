@@ -68,14 +68,14 @@ The extension looks for a specific pattern at the end of your filenames to gener
 
 - **Markdown:**
     ```md
-    ![Alt](img/photo__400-300_800-600.jpg)
+    ![Responsive image example](img/photo__400-300_800-600.jpg)
     ```
 - **Resulting HTML:**
     ```html
     <img
     	class="md-img"
     	src="img/photo__400-300_800-600.jpg"
-    	srcset="img/photo__400-300.jpg 400w, img/photo__400-300_800-600.jpg 800w"
+    	srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
     	width="800"
     	height="600"
     	alt="Responsive image example"
@@ -86,17 +86,17 @@ The extension looks for a specific pattern at the end of your filenames to gener
 
 - **Markdown:**
     ```md
-    ![Alt](img/photo__800-600-webp.jpg)
+    ![Web optimized photo example](img/photo__800-600-webp.jpg)
     ```
 - **Resulting HTML:**
     ```html
     <img
     	class="md-img"
     	src="img/photo__800-600-webp.jpg"
-    	srcset="img/photo__800-600.webp 800w, img/photo__800-600-webp.jpg 800w"
+    	srcset="img/photo__800-600.webp 800w"
     	width="800"
     	height="600"
-    	alt="Web opitimized photo example"
+    	alt="Web optimized photo example"
     />
     ```
 
@@ -105,11 +105,13 @@ The extension looks for a specific pattern at the end of your filenames to gener
 You can configure global options for **Marked Responsive Images** using:
 
 ```js
-marked.use(markedResponsiveImages(
-	sizes: 'string'
-	lazy: true | false
-	debug: true | false
-});
+marked.use(
+	markedResponsiveImages({
+		sizes: null, // {string}
+		lazy: true, // {boolean}
+		debug: false, // {boolean}
+	}),
+);
 ```
 
 | Option  | Type      | Default | Description                                                                      |
