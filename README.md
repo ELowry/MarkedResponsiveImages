@@ -110,12 +110,14 @@ marked.use(
 		sizes: null, // {string}
 		lazy: true, // {boolean}
 		debug: false, // {boolean}
+		picture: false, // {boolean}
 	}),
 );
 ```
 
-| Option  | Type      | Default | Description                                                                      |
-| :------ | :-------- | :------ | :------------------------------------------------------------------------------- |
-| `sizes` | `string`  | `null`  | The `sizes` attribute that should be added to generate `<img>` tags.             |
-| `lazy`  | `boolean` | `true`  | Adds `loading="lazy"` to images for better page load optimization.               |
-| `debug` | `boolean` | `false` | Log warnings to the console when URLs cannot be parsed or formats are malformed. |
+| Option    | Type      | Default | Description                                                                                                                                      |
+| :-------- | :-------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sizes`   | `string`  | `null`  | The `sizes` attribute that should be added to generate `<img>` tags.                                                                             |
+| `lazy`    | `boolean` | `true`  | Adds `loading="lazy"` to images for better page load optimization.                                                                               |
+| `debug`   | `boolean` | `false` | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                 |
+| `picture` | `boolean` | `false` | Enable to generate an HTML `<picture>` element with `<source>` tags for different file extensions instead of just a single `<img srcset="...">`. |

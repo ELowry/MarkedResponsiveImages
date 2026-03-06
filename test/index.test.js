@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { marked } from 'marked';
+import { marked, Marked } from 'marked';
 import markedResponsiveImages from '../src/index.js';
 
 describe('Marked Responsive Images Extension', () => {
@@ -48,5 +48,53 @@ describe('Marked Responsive Images Extension', () => {
 
 		assert.match(output, /alt="My &quot;Alt&quot; Text"/);
 		assert.match(output, /title="My &quot;Title&quot;"/);
+	});
+
+	describe('with picture option enabled', () => {
+		const markedPic = new Marked();
+		markedPic.use(
+			markedResponsiveImages({
+				sizes: '(max-width: 600px) 100vw, 50vw',
+				lazy: true,
+				picture: true,
+			}),
+		);
+
+		it('should generate a <picture> tag with <source> elements grouped by extensions', () => {
+			const input =
+				'![Picture](img/pic__400-300-webp_400-300-jpg_800-600-webp_800-600-jpg.jpg)';
+			const output = markedPic.parse(input);
+
+			assert.match(output, /<picture>/);
+			assert.match(
+				output,
+				/<source srcset=".*pic__400-300\.webp 400w, .*pic__800-600\.webp 800w".*type="image\/webp">/,
+			);
+			assert.match(
+				output,
+				/<source srcset=".*pic__400-300\.jpg 400w, .*pic__800-600\.jpg 800w".*type="image\/jpeg">/,
+			);
+			assert.match(
+				output,
+				/<img class="md-img" src="img\/pic__400-300-webp_400-300-jpg_800-600-webp_800-600-jpg\.jpg"/,
+			);
+		});
+
+		it('should sort original extension source to the end', () => {
+			const input = '![Picture](img/pic__400-300-png_400-300-webp.png)';
+			const output = markedPic.parse(input);
+
+			// Ensure type="image/webp" appears before type="image/png"
+			const webpIndex = output.indexOf('type="image/webp"');
+			const pngIndex = output.indexOf('type="image/png"');
+			assert.ok(webpIndex < pngIndex);
+		});
+
+		it('should inject sizes attribute into <source> elements', () => {
+			const input = '![Sizes](test__400-400-webp_400-400-jpg.jpg)';
+			const output = markedPic.parse(input);
+
+			assert.match(output, /<source.*sizes="\(max-width: 600px\) 100vw, 50vw"/);
+		});
 	});
 });

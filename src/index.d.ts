@@ -18,6 +18,11 @@ export interface ResponsiveImageOptions {
 	 * @default true
 	 */
 	lazy?: boolean;
+
+	/** Whether to generate a <picture> tag instead of an <img> tag.
+	 * @default false
+	 */
+	picture?: boolean;
 }
 
 /**
