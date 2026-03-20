@@ -6,7 +6,7 @@
  * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
  * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
- * @param {boolean} [options.picture=false] - Whether to generate a <picture> tag instead of an <img> tag.
+ * @param {boolean} [options.picture=false] - Whether to generate a simple <img> tag instead of a full <picutre> structure.
  */
 class MarkedResponsiveImages {
 	/**
@@ -31,11 +31,18 @@ class MarkedResponsiveImages {
 	#lazy;
 
 	/**
-	 * Whether to generate a <picture> tag instead of an <img> tag.
+	 * The class attribute to apply to rendered <img> tags.
+	 * @private
+	 * @type {string}
+	 */
+	#class;
+
+	/**
+	 * Whether to generate a simple <img> tag instead of a full <picture> structure.
 	 * @private
 	 * @type {boolean}
 	 */
-	#picture;
+	#renderSimpleImgTags;
 
 	/**
 	 * Regular expression to parse the filename for responsive image metadata.
@@ -54,13 +61,15 @@ class MarkedResponsiveImages {
 	 * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
 	 * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
 	 * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
-	 * @param {boolean} [options.picture=false] - Whether to generate a <picture> tag instead of an <img> tag.
+	 * @param {boolean} [options.class=''] - The class attribute to apply to rendered <img> tags.
+	 * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
 	 */
 	constructor(options = {}) {
 		this.#defaultSizes = options.sizes ?? null;
 		this.#debug = options.debug ?? false;
 		this.#lazy = options.lazy ?? true;
-		this.#picture = options.picture ?? false;
+		this.#renderSimpleImgTags = options.renderSimpleImgTags ?? false;
+		this.#class = typeof options.class === 'string' ? options.class.trim() : '';
 
 		this.#regex =
 			/^(.*)__((?:\d+-\d+(?:-[a-z0-9]+)?)(?:_(?:\d+-\d+(?:-[a-z0-9]+)?))*)(\.[^.]+)$/i;
@@ -113,14 +122,15 @@ class MarkedResponsiveImages {
 			const [, base, sizesPart, originalExtention] = match;
 			const variants = this.#processVariants(sizesPart, originalExtention);
 			const largest = variants[variants.length - 1];
-			const sizesAttr = this.#defaultSizes
+			const sizesAttribute = this.#defaultSizes
 				? ` sizes="${this.#stringEscape(this.#defaultSizes)}"`
 				: '';
-			const titleAttr = title ? ` title="${this.#stringEscape(title)}"` : '';
-			const lazyLoadingAttr = this.#lazy ? ` loading="lazy"` : '';
+			const titleAttribute = title ? ` title="${this.#stringEscape(title)}"` : '';
+			const lazyLoadingAttribute = this.#lazy ? ` loading="lazy"` : '';
+			const classes = this.#class ? ` class="${this.#class}"` : '';
 
-			if (this.#picture) {
-				const sourcesHtml = this.#generatePictureSources(
+			if (this.#renderSimpleImgTags) {
+				const srcset = this.#generateSrcset(
 					variants,
 					base,
 					pathname,
@@ -130,10 +140,11 @@ class MarkedResponsiveImages {
 					hash,
 					href,
 				);
-				return `<picture>${sourcesHtml}<img class="md-img" src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttr}${lazyLoadingAttr}></picture>`;
+
+				return `<img${classes} src="${href}" srcset="${srcset}"${sizesAttribute} width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttribute}${lazyLoadingAttribute}>`;
 			}
 
-			const srcset = this.#generateSrcset(
+			const sourcesHtml = this.#generatePictureSources(
 				variants,
 				base,
 				pathname,
@@ -144,7 +155,7 @@ class MarkedResponsiveImages {
 				href,
 			);
 
-			return `<img class="md-img" src="${href}" srcset="${srcset}"${sizesAttr} width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttr}${lazyLoadingAttr}>`;
+			return `<picture>${sourcesHtml}<img${classes} src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttribute}${lazyLoadingAttribute}></picture>`;
 		} catch (e) {
 			this.#error(`Error generating HTML for ${filename}`, e);
 			return false;
@@ -204,19 +215,21 @@ class MarkedResponsiveImages {
 	 * @returns {Array<Object>} Sorted array of variant objects.
 	 */
 	#processVariants(sizesPart, originalExtention) {
-		return sizesPart
-			.split('_')
-			.map((token) => {
+		const tokens = sizesPart.split('_');
+		return tokens
+			.map((token, index) => {
 				const parts = token.split('-');
 				const width = parseInt(parts[0], 10);
 				const height = parseInt(parts[1], 10);
-				const ext = parts[2] ? `.${parts[2]}` : originalExtention;
+				const extension = parts[2] ? `.${parts[2]}` : originalExtention;
+				const isOriginal = index === tokens.length - 1;
 
 				return {
 					width: width,
 					height: height,
-					ext: ext,
+					extension: extension,
 					token: `${width}-${height}`,
+					isOriginal: isOriginal,
 				};
 			})
 			.sort((a, b) => a.width - b.width);
@@ -238,34 +251,35 @@ class MarkedResponsiveImages {
 	 */
 	#generateSrcset(variants, base, pathname, isAbsolute, origin, search, hash, originalHref) {
 		const filename = pathname.split('/').pop();
-		const originalExtMatch = filename.match(/(\.[^.]+)$/);
-		const originalExt = originalExtMatch ? originalExtMatch[1] : '';
+		const originalExtensionMatch = filename.match(/(\.[^.]+)$/);
+		const originalExtension = originalExtensionMatch ? originalExtensionMatch[1] : '';
 
-		// Deduplicate variants by width, preferring a non-original extension
 		const chosen = new Map();
 
 		for (const variant of variants) {
 			const existing = chosen.get(variant.width);
+
 			if (!existing) {
 				chosen.set(variant.width, variant);
-				continue;
-			}
+			} else {
+				if (
+					existing.extension !== originalExtension
+					&& variant.extension === originalExtension
+				) {
+					chosen.set(variant.width, variant);
 
-			if (existing.ext === variant.ext) {
-				this.#warn(`Duplicate variant omitted: ${base}__${variant.token}${variant.ext}`);
-				continue;
-			}
-
-			const existingIsDefault = existing.ext === originalExt;
-			const variantIsDefault = variant.ext === originalExt;
-
-			if (existingIsDefault && !variantIsDefault) {
-				chosen.set(variant.width, variant);
-				continue;
-			}
-
-			if (!existingIsDefault && variantIsDefault) {
-				continue;
+					this.#warn(
+						`Duplicate width ${variant.width}w found. Preferring original format (${originalExtension}) over (${existing.extension}).`,
+					);
+				} else if (existing.extension === variant.extension) {
+					this.#warn(
+						`Duplicate variant omitted: ${base}__${variant.token}${variant.extension}`,
+					);
+				} else {
+					this.#warn(
+						`Duplicate width ${variant.width}w omitted: ${base}__${variant.token}${variant.extension}`,
+					);
+				}
 			}
 		}
 
@@ -283,6 +297,7 @@ class MarkedResponsiveImages {
 					search,
 					hash,
 					originalHref,
+					variant.isOriginal,
 				);
 
 				return `${finalUrl} ${variant.width}w`;
@@ -315,37 +330,39 @@ class MarkedResponsiveImages {
 		originalHref,
 	) {
 		const filename = pathname.split('/').pop();
-		const originalExtMatch = filename.match(/(\.[^.]+)$/);
-		const originalExt = originalExtMatch ? originalExtMatch[1] : '';
+		const originalExtensionMatch = filename.match(/(\.[^.]+)$/);
+		const originalExtension = originalExtensionMatch ? originalExtensionMatch[1] : '';
 
-		const byExt = new Map();
+		const byExtension = new Map();
 
 		for (const variant of variants) {
-			if (!byExt.has(variant.ext)) {
-				byExt.set(variant.ext, new Map());
+			if (!byExtension.has(variant.extension)) {
+				byExtension.set(variant.extension, new Map());
 			}
 
-			const existing = byExt.get(variant.ext).get(variant.width);
+			const existing = byExtension.get(variant.extension).get(variant.width);
 			if (existing) {
-				this.#warn(`Duplicate variant omitted: ${base}__${variant.token}${variant.ext}`);
+				this.#warn(
+					`Duplicate variant omitted: ${base}__${variant.token}${variant.extension}`,
+				);
 				continue;
 			}
-			byExt.get(variant.ext).set(variant.width, variant);
+			byExtension.get(variant.extension).set(variant.width, variant);
 		}
 
-		const extensions = Array.from(byExt.keys()).sort((a, b) => {
-			if (a === originalExt) return 1;
-			if (b === originalExt) return -1;
+		const extensions = Array.from(byExtension.keys()).sort((a, b) => {
+			if (a === originalExtension) return 1;
+			if (b === originalExtension) return -1;
 			return 0;
 		});
 
 		const sources = [];
-		for (const ext of extensions) {
-			const extVariants = Array.from(byExt.get(ext).values()).sort(
+		for (const extension of extensions) {
+			const extensionVariants = Array.from(byExtension.get(extension).values()).sort(
 				(a, b) => a.width - b.width,
 			);
 
-			const srcset = extVariants
+			const srcset = extensionVariants
 				.map((variant) => {
 					const finalUrl = this.#buildVariantUrl(
 						variant,
@@ -357,23 +374,24 @@ class MarkedResponsiveImages {
 						search,
 						hash,
 						originalHref,
+						variant.isOriginal,
 					);
 					return `${finalUrl} ${variant.width}w`;
 				})
 				.join(', ');
 
-			let typeAttr = '';
-			const cleanExt = ext.replace('.', '').toLowerCase();
-			const mimeType = this.#getMimeType(cleanExt);
+			let typeAttribute = '';
+			const cleanExtension = extension.replace('.', '').toLowerCase();
+			const mimeType = this.#getMimeType(cleanExtension);
 			if (mimeType) {
-				typeAttr = ` type="${mimeType}"`;
+				typeAttribute = ` type="${mimeType}"`;
 			}
 
-			const sizesAttr = this.#defaultSizes
+			const sizesAttribute = this.#defaultSizes
 				? ` sizes="${this.#stringEscape(this.#defaultSizes)}"`
 				: '';
 
-			sources.push(`<source srcset="${srcset}"${sizesAttr}${typeAttr}>`);
+			sources.push(`<source srcset="${srcset}"${sizesAttribute}${typeAttribute}>`);
 		}
 
 		return sources.join('');
@@ -404,8 +422,11 @@ class MarkedResponsiveImages {
 		search,
 		hash,
 		originalHref,
+		isOriginalFile = false,
 	) {
-		const variantFilename = `${base}__${variant.token}${variant.ext}`;
+		const variantFilename = isOriginalFile
+			? filename
+			: `${base}__${variant.token}${variant.extension}`;
 		const variantPathname =
 			pathname.substring(0, pathname.length - filename.length) + variantFilename;
 		let finalUrl;
@@ -428,11 +449,11 @@ class MarkedResponsiveImages {
 	 * Returns the MIME type for a given file extension.
 	 *
 	 * @private
-	 * @param {string} ext - The file extension.
+	 * @param {string} extension - The file extension.
 	 * @returns {string} The MIME type, or an empty string if unknown.
 	 */
-	#getMimeType(ext) {
-		const map = {
+	#getMimeType(extension) {
+		const extensionsMap = {
 			jpg: 'image/jpeg',
 			jpeg: 'image/jpeg',
 			png: 'image/png',
@@ -441,7 +462,7 @@ class MarkedResponsiveImages {
 			gif: 'image/gif',
 			svg: 'image/svg+xml',
 		};
-		return map[ext] || '';
+		return extensionsMap[extension] || '';
 	}
 
 	/**

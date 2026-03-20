@@ -19,10 +19,16 @@ export interface ResponsiveImageOptions {
 	 */
 	lazy?: boolean;
 
-	/** Whether to generate a <picture> tag instead of an <img> tag.
+	/** Whether to generate a simple <img> tag with a srcset attribute instead of a full <picture> element.
+	 * Note: When enabled, format variations (like WebP) are automatically stripped out.
 	 * @default false
 	 */
-	picture?: boolean;
+	renderSimpleImgTags?: boolean;
+
+	/** The class attribute to apply to rendered <img> tags.
+	 * @default ''
+	 */
+	imageClass?: string;
 }
 
 /**

@@ -4,7 +4,7 @@
 [![GitHub repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/ELowry/MarkedResponsiveImages)
 [![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
 
-An extension for [Marked](https://marked.js.org/) ([github](https://github.com/markedjs/marked), [npm](https://www.npmjs.com/package/marked)) designed to generate responsive images by injecting `srcset` and `sizes` attributes based on simple filename conventions.
+An extension for [Marked](https://marked.js.org/) ([github](https://github.com/markedjs/marked), [npm](https://www.npmjs.com/package/marked)) designed to generate responsive images by parsing simple filename conventions into full `<picture>` elements with `srcset` and `sizes` attributes based on simple filename conventions.
 
 **Marked Responsive Images** parses image filenames to detect available size and file extension variants without breaking standard markdown compatibility.
 
@@ -34,16 +34,13 @@ marked.use(markedResponsiveImages());
 const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 ```
 
-> [!NOTE]  
-> If a variant exists with the same dimensions but a different extension (for example `webp` alongside a `jpg`), the variant will be used in the `srcset` and the original extension will be omitted for better performance on modern browsers.
-
 ## Naming Convention
 
 ### Naming the Main File
 
-The extension looks for a specific pattern at the end of your filenames to generate the `srcset`.
+The extension looks for a specific pattern at the end of your filenames to generate the `<source>` tags and/or `srcset` attribute.
 
-**Pattern:** `filename__width-height_width-height-extension[…].png`
+**Pattern:** `filename__width-height_width-height-extension[…]_currentFileWidth-currentFileHeight.png`
 
 1. **Separator:**  
    Use two underscores (`__`) to separate the base name from the sizes.
@@ -56,7 +53,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
 
 > [!NOTE]  
 > **The "full name" image must exist on your server.**  
-> The image path you write in Markdown (e.g., `hero__400-300_800-600.jpg`) is used as the **graceful fallback**. This file is assigned to the `src` attribute and will be the only image loaded if the extension is disabled or if the Markdown is viewed in an environment that doesn't support responsive images.
+> The image path you write in Markdown (e.g., `hero__400-300_800-600.jpg`) is used as the **graceful fallback**. This raw filename is assigned to the `src` attribute of the inner `<img>` tag and will be the only image loaded if the extension is disabled or if the Markdown is viewed in an environment that doesn't support responsive images.
 
 > [!IMPORTANT]  
 > **This extension does not resize images.**  
@@ -72,32 +69,38 @@ The extension looks for a specific pattern at the end of your filenames to gener
     ```
 - **Resulting HTML:**
     ```html
-    <img
-    	class="md-img"
-    	src="img/photo__400-300_800-600.jpg"
-    	srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
-    	width="800"
-    	height="600"
-    	alt="Responsive image example"
-    />
+    <picture>
+    	<source
+    		srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
+    		type="image/jpeg"
+    	/>
+    	<img
+    		src="img/photo__400-300_800-600.jpg"
+    		width="800"
+    		height="600"
+    		alt="Responsive image example"
+    	/>
+    </picture>
     ```
 
 #### Format Switching:
 
 - **Markdown:**
     ```md
-    ![Web optimized photo example](img/photo__800-600-webp.jpg)
+    ![Web optimized photo example](img/photo__800-600-webp_800-600.jpg)
     ```
 - **Resulting HTML:**
     ```html
-    <img
-    	class="md-img"
-    	src="img/photo__800-600-webp.jpg"
-    	srcset="img/photo__800-600.webp 800w"
-    	width="800"
-    	height="600"
-    	alt="Web optimized photo example"
-    />
+    <picture>
+    	<source srcset="img/photo__800-600.webp 800w" type="image/webp" />
+    	<source srcset="img/photo__800-600.jpg 800w" type="image/jpeg" />
+    	<img
+    		src="img/photo__800-600-webp_800-600.jpg"
+    		width="800"
+    		height="600"
+    		alt="Web optimized photo example"
+    	/>
+    </picture>
     ```
 
 ## Configuration
@@ -110,14 +113,16 @@ marked.use(
 		sizes: null, // {string}
 		lazy: true, // {boolean}
 		debug: false, // {boolean}
-		picture: false, // {boolean}
+		class: '', // {string}
+		renderSimpleImgTags: false, // {boolean}
 	}),
 );
 ```
 
-| Option    | Type      | Default | Description                                                                                                                                      |
-| :-------- | :-------- | :------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sizes`   | `string`  | `null`  | The `sizes` attribute that should be added to generate `<img>` tags.                                                                             |
-| `lazy`    | `boolean` | `true`  | Adds `loading="lazy"` to images for better page load optimization.                                                                               |
-| `debug`   | `boolean` | `false` | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                 |
-| `picture` | `boolean` | `false` | Enable to generate an HTML `<picture>` element with `<source>` tags for different file extensions instead of just a single `<img srcset="...">`. |
+| Option                | Type      | Default | Description                                                                                                                                                                                                                              |
+| :-------------------- | :-------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sizes`               | `string`  | `null`  | The `sizes` attribute that should be added to generate `<source>` or `<img>` tags.                                                                                                                                                       |
+| `lazy`                | `boolean` | `true`  | Adds `loading="lazy"` to images for better page load optimization.                                                                                                                                                                       |
+| `debug`               | `boolean` | `false` | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                                                                                                         |
+| `class`               | `string`  | `''`    | The class attribute to apply to rendered `<img>` tags.                                                                                                                                                                                   |
+| `renderSimpleImgTags` | `boolean` | `false` | Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.<br/>_When enabled, format variations are automatically stripped out, as standard <img> tags do not support format negotiation._ |
