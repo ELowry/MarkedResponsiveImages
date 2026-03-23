@@ -19,7 +19,7 @@ export interface ResponsiveImageOptions {
 	 */
 	lazy?: boolean;
 
-	/** Whether to generate a simple <img> tag with a srcset attribute instead of a full <picture> element.
+	/** Whether to generate a simple <img> tag instead of a full <picture> structure.
 	 * Note: When enabled, format variations (like WebP) are automatically stripped out.
 	 * @default false
 	 */
@@ -28,11 +28,12 @@ export interface ResponsiveImageOptions {
 	/** The class attribute to apply to rendered <img> tags.
 	 * @default ''
 	 */
-	imageClass?: string;
+	class?: string;
 }
 
 /**
- * A Marked extension to handle responsive images.
+ * A Marked extension class for handling responsive images.
+ * Encapsulates parsing logic and configuration for generating responsive image sources.
  * @param options - Configuration options.
  * @returns The Marked extension object.
  */
