@@ -78,9 +78,12 @@ jobs:
             - name: Prepare Draft Assets for Release
               run: |
                   mkdir -p release-assets
-                  cp dist/index.iife.js release-assets/marked-responsive-images.iife.js
-                  cp dist/index.js release-assets/marked-responsive-images.esm.js
+                  cp dist/index.umd.js release-assets/marked-responsive-images.umd.js
+                  cp dist/index.umd.js.map release-assets/marked-responsive-images.umd.js.map
+                  cp dist/index.mjs release-assets/marked-responsive-images.mjs
+                  cp dist/index.mjs.map release-assets/marked-responsive-images.mjs.map
                   cp dist/index.cjs release-assets/marked-responsive-images.cjs
+                  cp dist/index.cjs.map release-assets/marked-responsive-images.cjs.map
                   cp dist/index.d.ts release-assets/index.d.ts
 
             - name: Create GitHub Release
