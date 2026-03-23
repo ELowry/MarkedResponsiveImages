@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { Marked } from 'marked';
-import markedResponsiveImages from '../src/index.js';
+import { markedResponsiveImages } from '../src/index.js';
 
 describe('Marked Responsive Images Extension', () => {
 	// Tests for the default behavior (<picture> mode)
