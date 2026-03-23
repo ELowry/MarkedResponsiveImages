@@ -192,14 +192,15 @@ class MarkedResponsiveImages {
 			};
 		} catch {
 			try {
-				const base = 'http://u';
-				const urlObj = new URL(href, base);
+				const dummyBase = 'http://relative-context.invalid';
+				const urlWithBase = new URL(href, dummyBase);
+				const isActuallyAbsolute = urlWithBase.origin !== dummyBase;
 				return {
-					origin: '',
-					pathname: urlObj.pathname,
-					search: urlObj.search,
-					hash: urlObj.hash,
-					isAbsolute: false,
+					origin: isActuallyAbsolute ? urlWithBase.origin : '',
+					pathname: urlWithBase.pathname,
+					search: urlWithBase.search,
+					hash: urlWithBase.hash,
+					isAbsolute: isActuallyAbsolute,
 				};
 			} catch {
 				return null;
