@@ -78,8 +78,6 @@ jobs:
             - name: Prepare Draft Assets for Release
               run: |
                   mkdir -p release-assets
-                  cp dist/index.iife.js release-assets/marked-responsive-images.iife.js
-                  cp dist/index.iife.js.map release-assets/marked-responsive-images.iife.js.map
                   cp dist/index.umd.js release-assets/marked-responsive-images.umd.js
                   cp dist/index.umd.js.map release-assets/marked-responsive-images.umd.js.map
                   cp dist/index.mjs release-assets/marked-responsive-images.mjs
