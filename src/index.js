@@ -1,12 +1,13 @@
 /**
  * A Marked extension class for handling responsive images.
- * Encapsulates parsing logic and configuration for generating srcset attributes.
+ * Encapsulates parsing logic and configuration for generating responsive image sources.
  *
  * @param {Object} [options={}] - Configuration options.
  * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
  * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
- * @param {boolean} [options.picture=false] - Whether to generate a simple <img> tag instead of a full <picutre> structure.
+ * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
+ * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
  */
 class MarkedResponsiveImages {
 	/**
@@ -497,14 +498,15 @@ class MarkedResponsiveImages {
 
 /**
  * A Marked extension class for handling responsive images.
- * Encapsulates parsing logic and configuration for generating srcset attributes.
+ * Encapsulates parsing logic and configuration for generating responsive image sources.
  * Usage: `marked.use(responsiveImages({ /* options *\/ }))`
  *
  * @param {Object} [options={}] - Configuration options.
  * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
  * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
- * @param {boolean} [options.picture=false] - Whether to generate a <picture> tag instead of an <img> tag.
+ * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
+ * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
  * @returns {Object} Marked extension object (renderer config).
  */
 export default function markedResponsiveImages(options = {}) {
