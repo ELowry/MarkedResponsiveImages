@@ -13,20 +13,20 @@
 	"homepage": "https://github.com/ELowry/MarkedResponsiveImages#readme",
 	"source": "src/index.js",
 	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"unpkg": "./dist/index.iife.js",
+	"module": "./dist/index.mjs",
+	"unpkg": "./dist/index.umd.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
+			"import": "./dist/index.mjs",
 			"require": "./dist/index.cjs"
 		}
 	},
 	"scripts": {
 		"test": "node --test",
-		"build": "tsdown src/index.js --format cjs,esm,iife --global-name MarkedResponsiveImages --clean && node -e \"import('node:fs').then(fs => fs.copyFileSync('src/index.d.ts', 'dist/index.d.ts'))\"",
-		"dev": "tsdown src/index.js --format cjs,esm,iife --global-name MarkedResponsiveImages --watch",
+		"build": "tsdown src/index.js --format cjs,esm,iife,umd --global-name MarkedResponsiveImages --sourcemap --clean && node -e \"import('node:fs').then(fs => fs.copyFileSync('src/index.d.ts', 'dist/index.d.ts'))\"",
+		"dev": "tsdown src/index.js --format cjs,esm,iife,umd --global-name MarkedResponsiveImages --sourcemap --watch",
 		"lint": "eslint src",
 		"format": "prettier --write \"src/**/*.{js,ts}\"",
 		"check-format": "prettier --check \"src/**/*.{js,ts}\"",
