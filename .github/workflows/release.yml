@@ -27,7 +27,7 @@ jobs:
               run: |
                   TAG_VERSION=${GITHUB_REF#refs/tags/v}
 
-                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  PKG_VERSION=$(node -p "JSON.parse(require('fs').readFileSync('./package.json')).version")
 
                   echo "Git Tag Version: $TAG_VERSION"
                   echo "Package.json Version: $PKG_VERSION"
@@ -49,6 +49,9 @@ jobs:
 
             - name: Build and Minify
               run: npm run build
+
+            - name: Run Tests
+              run: npm test
 
             - name: Publish to NPM
               run: npm publish --access public --provenance
@@ -75,10 +78,9 @@ jobs:
             - name: Prepare Draft Assets for Release
               run: |
                   mkdir -p release-assets
-                  cp dist/index.umd.js release-assets/marked-responsive-images.umd.js
-                  cp dist/index.module.js release-assets/marked-responsive-images.esm.js
+                  cp dist/index.iife.js release-assets/marked-responsive-images.iife.js
+                  cp dist/index.js release-assets/marked-responsive-images.esm.js
                   cp dist/index.cjs release-assets/marked-responsive-images.cjs
-                  cp dist/index.umd.js.map release-assets/marked-responsive-images.umd.js.map
                   cp dist/index.d.ts release-assets/index.d.ts
 
             - name: Create GitHub Release
