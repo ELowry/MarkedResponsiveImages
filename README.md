@@ -24,7 +24,7 @@ import markedResponsiveImages from 'marked-responsive-images';
 /*
 // or use UMD scripts
 <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked-responsive-images/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked-responsive-images/dist/index.iife.js"></script>
 */
 
 // Register with marked
