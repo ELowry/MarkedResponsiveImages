@@ -83,7 +83,7 @@ class MarkedResponsiveImages {
 	 */
 	get config() {
 		return {
-			name: 'responsiveImage',
+			name: 'markedResponsiveImages',
 			renderer: {
 				image: (token) => this.#render(token),
 			},
@@ -509,6 +509,6 @@ class MarkedResponsiveImages {
  * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
  * @returns {Object} Marked extension object (renderer config).
  */
-export default function markedResponsiveImages(options = {}) {
+export function markedResponsiveImages(options = {}) {
 	return new MarkedResponsiveImages(options).config;
 }

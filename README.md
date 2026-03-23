@@ -19,7 +19,7 @@ npm install marked-responsive-images
 ```javascript
 // Default factory export (recommended)
 import { marked } from 'marked';
-import markedResponsiveImages from 'marked-responsive-images';
+import { markedResponsiveImages } from 'marked-responsive-images';
 
 /*
 // or use UMD scripts
