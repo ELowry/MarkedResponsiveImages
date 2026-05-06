@@ -1,8 +1,6 @@
 # [Marked Responsive Images](https://github.com/ELowry/MarkedResponsiveImages)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub repo](https://img.shields.io/badge/GitHub-Repo-blue?logo=github)](https://github.com/ELowry/MarkedResponsiveImages)
-[![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Latest GitHub release](https://img.shields.io/github/v/release/ELowry/MarkedResponsiveImages?logo=GitHub&color=a4785e)](https://github.com/ELowry/MarkedResponsiveImages/releases/latest) [![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
 
 An extension for [Marked](https://marked.js.org/) ([github](https://github.com/markedjs/marked), [npm](https://www.npmjs.com/package/marked)) designed to generate responsive images by parsing simple filename conventions into full `<picture>` elements with `srcset` and `sizes` attributes based on simple filename conventions.
 
@@ -35,6 +33,9 @@ const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 ```
 
 ## Naming Convention
+
+> [!TIP]  
+> I have provided a [PowerShell automation script in a GitHub discussions](https://github.com/ELowry/MarkedResponsiveImages/discussions/18) to automatically generate image size variants, WebP alternatives, and output a fully formed Markedown image link.
 
 ### Naming the Main File
 
@@ -111,18 +112,22 @@ You can configure global options for **Marked Responsive Images** using:
 marked.use(
 	markedResponsiveImages({
 		sizes: null, // {string}
-		lazy: true, // {boolean}
-		debug: false, // {boolean}
 		class: '', // {string}
+		pictureClass: '', // {string}
+		debug: false, // {boolean}
+		lazy: true, // {boolean}
+		decoding: 'auto', // {'async' | 'sync' | 'auto'}
 		renderSimpleImgTags: false, // {boolean}
 	}),
 );
 ```
 
-| Option                | Type      | Default | Description                                                                                                                                                                                                                              |
-| :-------------------- | :-------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sizes`               | `string`  | `null`  | The `sizes` attribute that should be added to generate `<source>` or `<img>` tags.                                                                                                                                                       |
-| `lazy`                | `boolean` | `true`  | Adds `loading="lazy"` to images for better page load optimization.                                                                                                                                                                       |
-| `debug`               | `boolean` | `false` | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                                                                                                         |
-| `class`               | `string`  | `''`    | The class attribute to apply to rendered `<img>` tags.                                                                                                                                                                                   |
-| `renderSimpleImgTags` | `boolean` | `false` | Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.<br/>_When enabled, format variations are automatically stripped out, as standard <img> tags do not support format negotiation._ |
+| Option                | Type      | Default  | Description                                                                                                                                                                                                                              |
+| :-------------------- | :-------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sizes`               | `string`  | `null`   | The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width.                                                                                      |
+| `class`               | `string`  | `''`     | The class attribute to apply to rendered `<img>` tags.                                                                                                                                                                                   |
+| `pictureClass`        | `string`  | `''`     | The class attribute to apply to the `<picture>` wrapper tag.                                                                                                                                                                             |
+| `lazy`                | `boolean` | `true`   | Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization.                                                                                          |
+| `decoding`            | `string`  | `'auto'` | The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag.                                                                                             |
+| `debug`               | `boolean` | `false`  | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                                                                                                         |
+| `renderSimpleImgTags` | `boolean` | `false`  | Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.<br/>_When enabled, format variations are automatically stripped out, as standard <img> tags do not support format negotiation._ |

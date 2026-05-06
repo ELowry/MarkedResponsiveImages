@@ -5,6 +5,7 @@ import { MarkedExtension } from 'marked';
  */
 export interface ResponsiveImageOptions {
 	/** The value used for the image element's sizes attribute.
+	 * If omitted, a default sizes attribute is generated based on the largest variant.
 	 * @example "(max-width: 600px) 480px, 800px"
 	 */
 	sizes?: string;
@@ -29,6 +30,16 @@ export interface ResponsiveImageOptions {
 	 * @default ''
 	 */
 	class?: string;
+
+	/** The class attribute to apply to the <picture> tag.
+	 * @default ''
+	 */
+	pictureClass?: string;
+
+	/** Image decoding strategy.
+	 * @default 'auto'
+	 */
+	decoding?: 'async' | 'sync' | 'auto';
 }
 
 /**

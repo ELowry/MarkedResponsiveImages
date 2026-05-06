@@ -8,6 +8,8 @@
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
  * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
  * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
+ * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
+ * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
  */
 class MarkedResponsiveImages {
 	/**
@@ -39,6 +41,20 @@ class MarkedResponsiveImages {
 	#class;
 
 	/**
+	 * The class attribute to apply to the <picture> tag.
+	 * @private
+	 * @type {string}
+	 */
+	#pictureClass;
+
+	/**
+	 * The decoding attribute for the <img> tag.
+	 * @private
+	 * @type {string}
+	 */
+	#decoding;
+
+	/**
 	 * Whether to generate a simple <img> tag instead of a full <picture> structure.
 	 * @private
 	 * @type {boolean}
@@ -62,7 +78,9 @@ class MarkedResponsiveImages {
 	 * @param {string} [options.sizes=null] - The value used for the image element's sizes attribute.
 	 * @param {boolean} [options.debug=false] - Whether to log warnings and errors.
 	 * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
-	 * @param {boolean} [options.class=''] - The class attribute to apply to rendered <img> tags.
+	 * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
+	 * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
+	 * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
 	 * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
 	 */
 	constructor(options = {}) {
@@ -71,6 +89,9 @@ class MarkedResponsiveImages {
 		this.#lazy = options.lazy ?? true;
 		this.#renderSimpleImgTags = options.renderSimpleImgTags ?? false;
 		this.#class = typeof options.class === 'string' ? options.class.trim() : '';
+		this.#pictureClass =
+			typeof options.pictureClass === 'string' ? options.pictureClass.trim() : '';
+		this.#decoding = options.decoding ?? 'auto';
 
 		this.#regex =
 			/^(.*)__((?:\d+-\d+(?:-[a-z0-9]+)?)(?:_(?:\d+-\d+(?:-[a-z0-9]+)?))*)(\.[^.]+)$/i;
@@ -123,12 +144,15 @@ class MarkedResponsiveImages {
 			const [, base, sizesPart, originalExtention] = match;
 			const variants = this.#processVariants(sizesPart, originalExtention);
 			const largest = variants[variants.length - 1];
-			const sizesAttribute = this.#defaultSizes
-				? ` sizes="${this.#stringEscape(this.#defaultSizes)}"`
-				: '';
+
+			const sizesValue =
+				this.#defaultSizes || `(max-width: ${largest.width}px) 100vw, ${largest.width}px`;
+			const sizesAttribute = ` sizes="${this.#stringEscape(sizesValue)}"`;
 			const titleAttribute = title ? ` title="${this.#stringEscape(title)}"` : '';
 			const lazyLoadingAttribute = this.#lazy ? ` loading="lazy"` : '';
+			const decodingAttribute = this.#decoding ? ` decoding="${this.#decoding}"` : '';
 			const classes = this.#class ? ` class="${this.#class}"` : '';
+			const picClasses = this.#pictureClass ? ` class="${this.#pictureClass}"` : '';
 
 			if (this.#renderSimpleImgTags) {
 				const srcset = this.#generateSrcset(
@@ -142,7 +166,7 @@ class MarkedResponsiveImages {
 					href,
 				);
 
-				return `<img${classes} src="${href}" srcset="${srcset}"${sizesAttribute} width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttribute}${lazyLoadingAttribute}>`;
+				return `<img${classes} src="${href}" srcset="${srcset}"${sizesAttribute} width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}>`;
 			}
 
 			const sourcesHtml = this.#generatePictureSources(
@@ -154,9 +178,10 @@ class MarkedResponsiveImages {
 				search,
 				hash,
 				href,
+				sizesAttribute,
 			);
 
-			return `<picture>${sourcesHtml}<img${classes} src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text) || ''}"${titleAttribute}${lazyLoadingAttribute}></picture>`;
+			return `<picture${picClasses}>${sourcesHtml}<img${classes} src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}></picture>`;
 		} catch (e) {
 			this.#error(`Error generating HTML for ${filename}`, e);
 			return false;
@@ -319,6 +344,7 @@ class MarkedResponsiveImages {
 	 * @param {string} search - URL search params.
 	 * @param {string} hash - URL hash.
 	 * @param {string} originalHref - The raw input href.
+	 * @param {string} sizesAttribute - The formatted sizes attribute string.
 	 * @returns {string} The HTML <source> tags.
 	 */
 	#generatePictureSources(
@@ -330,6 +356,7 @@ class MarkedResponsiveImages {
 		search,
 		hash,
 		originalHref,
+		sizesAttribute,
 	) {
 		const filename = pathname.split('/').pop();
 		const originalExtensionMatch = filename.match(/(\.[^.]+)$/);
@@ -388,10 +415,6 @@ class MarkedResponsiveImages {
 			if (mimeType) {
 				typeAttribute = ` type="${mimeType}"`;
 			}
-
-			const sizesAttribute = this.#defaultSizes
-				? ` sizes="${this.#stringEscape(this.#defaultSizes)}"`
-				: '';
 
 			sources.push(`<source srcset="${srcset}"${sizesAttribute}${typeAttribute}>`);
 		}
@@ -508,6 +531,8 @@ class MarkedResponsiveImages {
  * @param {boolean} [options.lazy=true] - Whether to enable images lazy loading.
  * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
  * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
+ * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
+ * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
  * @returns {Object} Marked extension object (renderer config).
  */
 export function markedResponsiveImages(options = {}) {
