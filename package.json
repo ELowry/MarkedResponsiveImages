@@ -1,6 +1,6 @@
 {
 	"name": "marked-responsive-images",
-	"version": "2.0.3",
+	"version": "2.1.0",
 	"description": "A robust marked extension for handling responsive images with srcset generation.",
 	"type": "module",
 	"repository": {
@@ -24,8 +24,8 @@
 		}
 	},
 	"scripts": {
-		"test": "node --test",
-		"build": "tsdown src/index.js --format cjs,esm,umd --global-name markedResponsiveImages --sourcemap --clean && node -e \"import('node:fs').then(fs => fs.copyFileSync('src/index.d.ts', 'dist/index.d.ts'))\"",
+		"test": "node --test && node -e \"const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8')); if (pkg.version !== lock.version) { console.error('Version mismatch: package.json (' + pkg.version + ') vs package-lock.json (' + lock.version + ')'); process.exit(1); }\"",
+		"build": "npm run format && npm run lint && npm run test && tsdown src/index.js --format cjs,esm,umd --global-name markedResponsiveImages --sourcemap --clean && node -e \"import('node:fs').then(fs => fs.copyFileSync('src/index.d.ts', 'dist/index.d.ts'))\"",
 		"dev": "tsdown src/index.js --format cjs,esm,umd --global-name markedResponsiveImages --sourcemap --watch",
 		"lint": "eslint src",
 		"format": "prettier --write \"src/**/*.{js,ts}\"",
