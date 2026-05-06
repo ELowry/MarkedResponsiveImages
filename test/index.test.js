@@ -169,10 +169,10 @@ describe('Marked Responsive Images Extension', () => {
 	describe('with imageClass option customized', () => {
 		it('should use a custom CSS class name', () => {
 			const markedCustomClass = new Marked();
-			markedCustomClass.use(markedResponsiveImages({ class: 'my-custom-pic' }));
+			markedCustomClass.use(markedResponsiveImages({ class: 'custom-image-class' }));
 			const output = markedCustomClass.parse('![Alt](img/test__100-100_200-200.jpg)');
 
-			assert.match(output, /class="my-custom-pic"/);
+			assert.match(output, /class="custom-image-class"/);
 		});
 
 		it('should omit the class attribute entirely if set to an empty string', () => {
@@ -190,6 +190,55 @@ describe('Marked Responsive Images Extension', () => {
 			const output = markedInvalidClass.parse('![Alt](img/test__100-100_200-200.jpg)');
 
 			assert.doesNotMatch(output, /class=/);
+		});
+	});
+
+	// Tests for custom pictureClass parameter
+	describe('with pictureClass option customized', () => {
+		it('should use a custom CSS class name on the picture tag', () => {
+			const markedCustomClass = new Marked();
+			markedCustomClass.use(markedResponsiveImages({ pictureClass: 'picture-wrapper' }));
+			const output = markedCustomClass.parse('![Alt](img/test__100-100_200-200.jpg)');
+
+			assert.match(output, /<picture class="picture-wrapper">/);
+		});
+	});
+
+	// Tests for decoding parameter
+	describe('with decoding option customized', () => {
+		it('should use decoding="auto" by default', () => {
+			const markedDefault = new Marked();
+			markedDefault.use(markedResponsiveImages());
+			const output = markedDefault.parse('![Alt](img/test__100-100_200-200.jpg)');
+
+			assert.match(output, /decoding="auto"/);
+		});
+
+		it('should use a custom decoding value', () => {
+			const markedCustom = new Marked();
+			markedCustom.use(markedResponsiveImages({ decoding: 'async' }));
+			const output = markedCustom.parse('![Alt](img/test__100-100_200-200.jpg)');
+
+			assert.match(output, /decoding="async"/);
+		});
+
+		it('should omit decoding if set to empty string', () => {
+			const markedEmpty = new Marked();
+			markedEmpty.use(markedResponsiveImages({ decoding: '' }));
+			const output = markedEmpty.parse('![Alt](img/test__100-100_200-200.jpg)');
+
+			assert.doesNotMatch(output, /decoding=/);
+		});
+	});
+
+	// Tests for auto sizes
+	describe('automatic sizes attribute', () => {
+		it('should automatically generate sizes based on largest variant width when sizes is omitted', () => {
+			const markedAutoSizes = new Marked();
+			markedAutoSizes.use(markedResponsiveImages()); // no sizes option provided
+			const output = markedAutoSizes.parse('![Alt](img/test__100-100_300-300.jpg)');
+
+			assert.match(output, /sizes="\(max-width: 300px\) 100vw, 300px"/);
 		});
 	});
 });
