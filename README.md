@@ -35,7 +35,7 @@ const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 ## Naming Convention
 
 > [!TIP]  
-> I have provided a [PowerShell automation script in a GitHub discussions](https://gist.github.com/ELowry/0fa9fe7d0597fc321b06b83a2954e605) to automatically generate image size variants, WebP alternatives, and output a fully formed Markedown image link.
+> I have written a [PowerShell automation script](https://gist.github.com/ELowry/0fa9fe7d0597fc321b06b83a2954e605) to automatically generate image size variants, WebP alternatives, and output a fully formed Markedown image link.
 
 ### Naming the Main File
 
