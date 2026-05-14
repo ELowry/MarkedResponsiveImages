@@ -1,6 +1,6 @@
 # [Marked Responsive Images](https://github.com/ELowry/MarkedResponsiveImages)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Latest GitHub release](https://img.shields.io/github/v/release/ELowry/MarkedResponsiveImages?logo=GitHub&color=a4785e)](https://github.com/ELowry/MarkedResponsiveImages/releases/latest) [![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
+[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![Latest GitHub release](https://img.shields.io/github/v/release/ELowry/MarkedResponsiveImages?logo=GitHub&color=a4785e)](https://github.com/ELowry/MarkedResponsiveImages/releases/latest) [![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm)](https://www.npmjs.com/package/marked-responsive-images)
 
 An extension for [Marked](https://marked.js.org/) ([github](https://github.com/markedjs/marked), [npm](https://www.npmjs.com/package/marked)) designed to generate responsive images by parsing simple filename conventions into full `<picture>` elements with `srcset` and `sizes` attributes based on simple filename conventions.
 
