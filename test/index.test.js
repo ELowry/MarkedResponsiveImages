@@ -14,27 +14,86 @@ describe('Marked Responsive Images Extension', () => {
 			}),
 		);
 
-		it('should generate a <picture> tag with <source> elements grouped by extensions', () => {
-			const input = '![Picture](img/pic__400-300-webp_800-600-webp_400-300_800-600.jpg)';
+		it('should sort <source> elements based on the default format priority order', () => {
+			// Testing formats out of order: webp, jpg, avif, jxl
+			const input = '![Picture](img/pic__400-300-webp_400-300-avif_400-300-jxl_400-300.jpg)';
 			const output = markedPic.parse(input);
 
 			assert.match(output, /<picture>/);
 
-			// WebP source
+			const jxlIndex = output.indexOf('type="image/jxl"');
+			const avifIndex = output.indexOf('type="image/avif"');
+			const webpIndex = output.indexOf('type="image/webp"');
+
+			// Assert they exist
+			assert.ok(jxlIndex !== -1, 'JXL source missing');
+			assert.ok(avifIndex !== -1, 'AVIF source missing');
+			assert.ok(webpIndex !== -1, 'WebP source missing');
+
+			// Assert default efficiency priority: jxl -> avif -> webp -> original (jpg fallback)
+			assert.ok(jxlIndex < avifIndex, 'JXL should appear before AVIF');
+			assert.ok(avifIndex < webpIndex, 'AVIF should appear before WebP');
+
+			// The original JPG will still be parsed as the fallback src inside the <img>
 			assert.match(
 				output,
-				/<source srcset="img\/pic__400-300\.webp 400w, img\/pic__800-600\.webp 800w".*type="image\/webp">/,
+				/<img src="img\/pic__400-300-webp_400-300-avif_400-300-jxl_400-300\.jpg"/,
+			);
+		});
+
+		it('should respect a custom formatPriority array when sorting <source> elements', () => {
+			const markedCustomPriority = new Marked();
+			markedCustomPriority.use(
+				markedResponsiveImages({
+					formatPriority: ['webp', 'png', 'avif'], // Custom order prioritizing WebP
+				}),
 			);
 
-			// JPEG source (800-600 is the original file, so it uses the raw filename)
-			assert.match(
-				output,
-				/<source srcset="img\/pic__400-300\.jpg 400w, img\/pic__400-300-webp_800-600-webp_400-300_800-600\.jpg 800w".*type="image\/jpeg">/,
-			);
+			const input = '![Custom Priority](img/test__400-300-avif_400-300-webp_400-300.png)';
+			const output = markedCustomPriority.parse(input);
 
+			const webpIndex = output.indexOf('type="image/webp"');
+			const avifIndex = output.indexOf('type="image/avif"');
+
+			// Even though avif comes first in the filename, our custom priority demands webp first
+			assert.ok(
+				webpIndex < avifIndex,
+				'WebP should appear before AVIF due to custom priority',
+			);
+		});
+
+		it('should assign the correct MIME types for all supported extensions', () => {
+			const mimeMap = {
+				jxl: 'image/jxl',
+				avif: 'image/avif',
+				webp: 'image/webp',
+				gif: 'image/gif',
+				svg: 'image/svg+xml',
+				png: 'image/png',
+				jpg: 'image/jpeg',
+				jpeg: 'image/jpeg',
+			};
+
+			for (const [ext, expectedMime] of Object.entries(mimeMap)) {
+				const input = `![Mime Test](img/test__400-300-${ext}_800-600.jpg)`;
+				const output = markedPic.parse(input);
+
+				assert.match(
+					output,
+					new RegExp(`type="${expectedMime.replace('+', '\\+')}"`),
+					`Failed to map .${ext} to ${expectedMime}`,
+				);
+			}
+		});
+
+		it('should handle pixel density descriptors (e.g., 1x, 2x) instead of width descriptors', () => {
+			const input = '![Retina](img/ui__400-300-1x_800-600-2x.png)';
+			const output = markedPic.parse(input);
+
+			// Checks that the first source uses "1x" and the final fallback source uses "2x"
 			assert.match(
 				output,
-				/<img src="img\/pic__400-300-webp_800-600-webp_400-300_800-600\.jpg"/,
+				/srcset="img\/ui__400-300\.png 1x, img\/ui__400-300-1x_800-600-2x\.png 2x"/,
 			);
 		});
 

@@ -41,7 +41,7 @@ const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 
 The extension looks for a specific pattern at the end of your filenames to generate the `<source>` tags and/or `srcset` attribute.
 
-**Pattern:** `filename__width-height_width-height-extension[…]_currentFileWidth-currentFileHeight.png`
+**Pattern:** `filename__width-height[-density][-extension]_[…]_currentFileWidth-currentFileHeight.png`
 
 1. **Separator:**  
    Use two underscores (`__`) to separate the base name from the sizes.
@@ -49,12 +49,19 @@ The extension looks for a specific pattern at the end of your filenames to gener
    Use one underscore (`_`) to separate different size variants.
 3. **Dimensions:**  
    Use a dash (`-`) to separate width and height.
-4. **[*optional*] Extension:**  
-   Use a second dash (`-`) to specify a file extension if it is different from the one used by the URL.
+4. **[*optional*] Density:**  
+   Use a dash (`-`) followed by a pixel density multiplier (e.g., `1x`, `1.5x`, `2x`) to instruct the browser to use display density rather than viewport width.
+5. **[*optional*] Extension:**  
+   Use a dash (`-`) to specify a file extension if it is different from the one used by the URL.
+    - Supported formats: `jpg`, `jpeg`, `png`, `webp`, `avif`, `gif`, `svg`, `jxl`.
 
 > [!NOTE]  
 > **The "full name" image must exist on your server.**  
 > The image path you write in Markdown (e.g., `hero__400-300_800-600.jpg`) is used as the **graceful fallback**. This raw filename is assigned to the `src` attribute of the inner `<img>` tag and will be the only image loaded if the extension is disabled or if the Markdown is viewed in an environment that doesn't support responsive images.
+
+> [!NOTE]  
+> **Format Ordering:**  
+> When multiple formats of the same size are provided, the extension automatically sorts the generated `<source>` tags based on the `formatPriority` configuration array (defaulting to the most modern/efficient formats first, like JXL and AVIF). The physical order of the tokens in the filename does not matter.
 
 > [!IMPORTANT]  
 > **This extension does not resize images.**  
@@ -104,6 +111,25 @@ The extension looks for a specific pattern at the end of your filenames to gener
     </picture>
     ```
 
+#### Pixel Density (Retina Displays):
+
+- **Markdown:**
+    ```md
+    ![App screenshot](img/ui__400-300-1x_800-600-2x.png)
+    ```
+- **Resulting HTML:**
+    ```html
+    <picture>
+    	<source srcset="img/ui__400-300.png 1x, img/ui__800-600.png 2x" type="image/png" />
+    	<img
+    		src="img/ui__400-300-1x_800-600-2x.png"
+    		width="800"
+    		height="600"
+    		alt="App screenshot"
+    	/>
+    </picture>
+    ```
+
 ## Configuration
 
 You can configure global options for **Marked Responsive Images** using:
@@ -118,16 +144,21 @@ marked.use(
 		lazy: true, // {boolean}
 		decoding: 'auto', // {'async' | 'sync' | 'auto'}
 		renderSimpleImgTags: false, // {boolean}
+		formatPriority: ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg'], // {Array<string>}
 	}),
 );
 ```
 
-| Option                | Type      | Default  | Description                                                                                                                                                                                                                              |
-| :-------------------- | :-------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sizes`               | `string`  | `null`   | The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width.                                                                                      |
-| `class`               | `string`  | `''`     | The class attribute to apply to rendered `<img>` tags.                                                                                                                                                                                   |
-| `pictureClass`        | `string`  | `''`     | The class attribute to apply to the `<picture>` wrapper tag.                                                                                                                                                                             |
-| `lazy`                | `boolean` | `true`   | Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization.                                                                                          |
-| `decoding`            | `string`  | `'auto'` | The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag.                                                                                             |
-| `debug`               | `boolean` | `false`  | Log warnings to the console when URLs cannot be parsed or formats are malformed.                                                                                                                                                         |
+<!-- prettier-ignore -->
+| Option | Type | Default | Description |
+| :-------------------- | :-------- | :------- | :-- |
+| `sizes`               | `string`  | `null`   | The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width. |
+| `class`               | `string`  | `''`     | The class attribute to apply to rendered `<img>` tags. |
+| `pictureClass`        | `string`  | `''`     | The class attribute to apply to the `<picture>` wrapper tag. |
+| `lazy`                | `boolean` | `true`   | Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization. |
+| `decoding`            | `string`  | `'auto'` | The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag. |
+| `debug`               | `boolean` | `false`  | Log warnings to the console when URLs cannot be parsed or formats are malformed. |
 | `renderSimpleImgTags` | `boolean` | `false`  | Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.<br/>_When enabled, format variations are automatically stripped out, as standard `<img>` tags do not support format negotiation._ |
+| `formatPriority`      | `Array<string>` | `['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']` | Defines the sorting priority for `<source>` formats. The default is ordered based on typical efficiency. |
+
+<!-- prettier-ignore end -->

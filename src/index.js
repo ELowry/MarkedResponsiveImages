@@ -1,4 +1,14 @@
 /**
+ * @typedef {Object} ImageVariant
+ * @property {number} width - The parsed width of the variant.
+ * @property {number} height - The parsed height of the variant.
+ * @property {string} extension - The file extension (e.g., '.jpg').
+ * @property {string} descriptor - The srcset descriptor (e.g., '400w' or '2x').
+ * @property {string} token - The raw size token from the filename.
+ * @property {boolean} isOriginal - Whether this variant represents the original file.
+ */
+
+/**
  * A Marked extension class for handling responsive images.
  * Encapsulates parsing logic and configuration for generating responsive image sources.
  *
@@ -10,6 +20,7 @@
  * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
  * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
  * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
+ * @param {Array<string>} [options.formatPriority=['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']] - The priority order for sorting <source> formats.
  */
 class MarkedResponsiveImages {
 	/**
@@ -62,9 +73,16 @@ class MarkedResponsiveImages {
 	#renderSimpleImgTags;
 
 	/**
+	 * The priority order for sorting <source> formats.
+	 * @private
+	 * @type {Array<string>}
+	 */
+	#formatPriority;
+
+	/**
 	 * Regular expression to parse the filename for responsive image metadata.
 	 * `^(.*)__` Greedy capture of base name up to the LAST double underscore.
-	 * `((?:\d+-\d+(?:-[a-z0-9]+)?)...)` Captures the "sizes" part. Expects 'W-H' or 'W-H-EXT'.
+	 * `((?:\d+-\d+(?:-[a-z0-9.]+){0,2})...)` Captures the "sizes" part. Expects 'WIDTH-HEIGHT', 'WIDTH-HEIGHT-EXTENSION', 'WIDTH-HEIGHT-DENSITY', or 'WIDTH-HEIGHT-DENSITY-EXTENSION'.
 	 * `(\.[^.]+)$` Captures the file extension.
 	 * @private
 	 * @type {RegExp}
@@ -82,6 +100,7 @@ class MarkedResponsiveImages {
 	 * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
 	 * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
 	 * @param {boolean} [options.renderSimpleImgTags=false] - Whether to generate a simple <img> tag instead of a full <picture> structure.
+	 * @param {Array<string>} [options.formatPriority=['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']] - The priority order for sorting <source> formats.
 	 */
 	constructor(options = {}) {
 		this.#defaultSizes = options.sizes ?? null;
@@ -92,9 +111,12 @@ class MarkedResponsiveImages {
 		this.#pictureClass =
 			typeof options.pictureClass === 'string' ? options.pictureClass.trim() : '';
 		this.#decoding = options.decoding ?? 'auto';
+		this.#formatPriority = Array.isArray(options.formatPriority)
+			? options.formatPriority
+			: ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg'];
 
 		this.#regex =
-			/^(.*)__((?:\d+-\d+(?:-[a-z0-9]+)?)(?:_(?:\d+-\d+(?:-[a-z0-9]+)?))*)(\.[^.]+)$/i;
+			/^(.*)__((?:\d+-\d+(?:-[a-z0-9.]+){0,2})(?:_(?:\d+-\d+(?:-[a-z0-9.]+){0,2}))*)(\.[^.]+)$/i;
 	}
 
 	/**
@@ -141,8 +163,8 @@ class MarkedResponsiveImages {
 		}
 
 		try {
-			const [, base, sizesPart, originalExtention] = match;
-			const variants = this.#processVariants(sizesPart, originalExtention);
+			const [, base, sizesPart, originalExtension] = match;
+			const variants = this.#processVariants(sizesPart, originalExtension);
 			const largest = variants[variants.length - 1];
 
 			const sizesValue =
@@ -152,7 +174,7 @@ class MarkedResponsiveImages {
 			const lazyLoadingAttribute = this.#lazy ? ` loading="lazy"` : '';
 			const decodingAttribute = this.#decoding ? ` decoding="${this.#decoding}"` : '';
 			const classes = this.#class ? ` class="${this.#class}"` : '';
-			const picClasses = this.#pictureClass ? ` class="${this.#pictureClass}"` : '';
+			const pictureClasses = this.#pictureClass ? ` class="${this.#pictureClass}"` : '';
 
 			if (this.#renderSimpleImgTags) {
 				const srcset = this.#generateSrcset(
@@ -181,9 +203,9 @@ class MarkedResponsiveImages {
 				sizesAttribute,
 			);
 
-			return `<picture${picClasses}>${sourcesHtml}<img${classes} src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}></picture>`;
-		} catch (e) {
-			this.#error(`Error generating HTML for ${filename}`, e);
+			return `<picture${pictureClasses}>${sourcesHtml}<img${classes} src="${href}" width="${largest.width}" height="${largest.height}" alt="${this.#stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}></picture>`;
+		} catch (error) {
+			this.#error(`Error generating HTML for ${filename}`, error);
 			return false;
 		}
 	}
@@ -203,23 +225,23 @@ class MarkedResponsiveImages {
 	 *
 	 * @private
 	 * @param {string} href - The URL to parse.
-	 * @returns {Object|null} The parsed URL components.
+	 * @returns {{origin: string, pathname: string, search: string, hash: string, isAbsolute: boolean}|null} The parsed URL components.
 	 */
 	#parseUrl(href) {
 		try {
-			const urlObj = new URL(href);
+			const urlObject = new URL(href);
 			return {
-				origin: urlObj.origin,
-				pathname: urlObj.pathname,
-				search: urlObj.search,
-				hash: urlObj.hash,
+				origin: urlObject.origin,
+				pathname: urlObject.pathname,
+				search: urlObject.search,
+				hash: urlObject.hash,
 				isAbsolute: true,
 			};
 		} catch {
 			try {
-				const dummyBase = 'http://relative-context.invalid';
-				const urlWithBase = new URL(href, dummyBase);
-				const isActuallyAbsolute = urlWithBase.origin !== dummyBase;
+				const dummyBaseUrl = 'http://relative-context.invalid';
+				const urlWithBase = new URL(href, dummyBaseUrl);
+				const isActuallyAbsolute = urlWithBase.origin !== dummyBaseUrl;
 				return {
 					origin: isActuallyAbsolute ? urlWithBase.origin : '',
 					pathname: urlWithBase.pathname,
@@ -238,23 +260,35 @@ class MarkedResponsiveImages {
 	 *
 	 * @private
 	 * @param {string} sizesPart - The string containing size definitions.
-	 * @param {string} originalExtention - The file extension of the original image.
-	 * @returns {Array<Object>} Sorted array of variant objects.
+	 * @param {string} originalExtension - The file extension of the original image.
+	 * @returns {Array<ImageVariant>} Sorted array of variant objects.
 	 */
-	#processVariants(sizesPart, originalExtention) {
+	#processVariants(sizesPart, originalExtension) {
 		const tokens = sizesPart.split('_');
 		return tokens
 			.map((token, index) => {
 				const parts = token.split('-');
 				const width = parseInt(parts[0], 10);
 				const height = parseInt(parts[1], 10);
-				const extension = parts[2] ? `.${parts[2]}` : originalExtention;
+
+				let descriptor = `${width}w`;
+				let extension = originalExtension;
+
+				for (let partIndex = 2; partIndex < parts.length; partIndex++) {
+					if (/^\d+(?:\.\d+)?x$/i.test(parts[partIndex])) {
+						descriptor = parts[partIndex].toLowerCase();
+					} else {
+						extension = `.${parts[partIndex]}`;
+					}
+				}
+
 				const isOriginal = index === tokens.length - 1;
 
 				return {
 					width: width,
 					height: height,
 					extension: extension,
+					descriptor: descriptor,
 					token: `${width}-${height}`,
 					isOriginal: isOriginal,
 				};
@@ -266,7 +300,7 @@ class MarkedResponsiveImages {
 	 * Generates the srcset string.
 	 *
 	 * @private
-	 * @param {Array<Object>} variants - Processed variants.
+	 * @param {Array<ImageVariant>} variants - Processed variants.
 	 * @param {string} base - Base filename.
 	 * @param {string} pathname - Current pathname.
 	 * @param {boolean} isAbsolute - Whether the original URL was absolute.
@@ -284,19 +318,19 @@ class MarkedResponsiveImages {
 		const chosen = new Map();
 
 		for (const variant of variants) {
-			const existing = chosen.get(variant.width);
+			const existing = chosen.get(variant.descriptor);
 
 			if (!existing) {
-				chosen.set(variant.width, variant);
+				chosen.set(variant.descriptor, variant);
 			} else {
 				if (
 					existing.extension !== originalExtension
 					&& variant.extension === originalExtension
 				) {
-					chosen.set(variant.width, variant);
+					chosen.set(variant.descriptor, variant);
 
 					this.#warn(
-						`Duplicate width ${variant.width}w found. Preferring original format (${originalExtension}) over (${existing.extension}).`,
+						`Duplicate descriptor ${variant.descriptor} found. Preferring original format (${originalExtension}) over (${existing.extension}).`,
 					);
 				} else if (existing.extension === variant.extension) {
 					this.#warn(
@@ -304,7 +338,7 @@ class MarkedResponsiveImages {
 					);
 				} else {
 					this.#warn(
-						`Duplicate width ${variant.width}w omitted: ${base}__${variant.token}${variant.extension}`,
+						`Duplicate descriptor ${variant.descriptor} omitted: ${base}__${variant.token}${variant.extension}`,
 					);
 				}
 			}
@@ -327,7 +361,7 @@ class MarkedResponsiveImages {
 					variant.isOriginal,
 				);
 
-				return `${finalUrl} ${variant.width}w`;
+				return `${finalUrl} ${variant.descriptor}`;
 			})
 			.join(', ');
 	}
@@ -336,7 +370,7 @@ class MarkedResponsiveImages {
 	 * Generates the <source> tags for a <picture> element.
 	 *
 	 * @private
-	 * @param {Array<Object>} variants - Processed variants.
+	 * @param {Array<ImageVariant>} variants - Processed variants.
 	 * @param {string} base - Base filename.
 	 * @param {string} pathname - Current pathname.
 	 * @param {boolean} isAbsolute - Whether the original URL was absolute.
@@ -369,20 +403,34 @@ class MarkedResponsiveImages {
 				byExtension.set(variant.extension, new Map());
 			}
 
-			const existing = byExtension.get(variant.extension).get(variant.width);
+			const existing = byExtension.get(variant.extension).get(variant.descriptor);
 			if (existing) {
 				this.#warn(
 					`Duplicate variant omitted: ${base}__${variant.token}${variant.extension}`,
 				);
 				continue;
 			}
-			byExtension.get(variant.extension).set(variant.width, variant);
+			byExtension.get(variant.extension).set(variant.descriptor, variant);
 		}
 
-		const extensions = Array.from(byExtension.keys()).sort((a, b) => {
-			if (a === originalExtension) return 1;
-			if (b === originalExtension) return -1;
-			return 0;
+		const extensions = Array.from(byExtension.keys()).sort((extensionA, extensionB) => {
+			if (extensionA === originalExtension) return 1;
+			if (extensionB === originalExtension) return -1;
+
+			const cleanExtensionA = extensionA.replace('.', '').toLowerCase();
+			const cleanExtensionB = extensionB.replace('.', '').toLowerCase();
+
+			let priorityIndexA = this.#formatPriority.indexOf(cleanExtensionA);
+			let priorityIndexB = this.#formatPriority.indexOf(cleanExtensionB);
+
+			if (priorityIndexA === -1) priorityIndexA = Number.MAX_SAFE_INTEGER;
+			if (priorityIndexB === -1) priorityIndexB = Number.MAX_SAFE_INTEGER;
+
+			if (priorityIndexA !== priorityIndexB) {
+				return priorityIndexA - priorityIndexB;
+			}
+
+			return extensionA.localeCompare(extensionB);
 		});
 
 		const sources = [];
@@ -405,7 +453,7 @@ class MarkedResponsiveImages {
 						originalHref,
 						variant.isOriginal,
 					);
-					return `${finalUrl} ${variant.width}w`;
+					return `${finalUrl} ${variant.descriptor}`;
 				})
 				.join(', ');
 
@@ -426,7 +474,7 @@ class MarkedResponsiveImages {
 	 * Builds the final URL for a given variant.
 	 *
 	 * @private
-	 * @param {Object} variant - The variant object.
+	 * @param {ImageVariant} variant - The variant object.
 	 * @param {string} base - Base filename.
 	 * @param {string} pathname - Current pathname.
 	 * @param {string} filename - Original filename.
@@ -435,6 +483,7 @@ class MarkedResponsiveImages {
 	 * @param {string} search - URL search params.
 	 * @param {string} hash - URL hash.
 	 * @param {string} originalHref - The raw input href.
+	 * @param {boolean} isOriginalFile - Whether this is the original file.
 	 * @returns {string} The final URL.
 	 */
 	#buildVariantUrl(
@@ -486,6 +535,7 @@ class MarkedResponsiveImages {
 			avif: 'image/avif',
 			gif: 'image/gif',
 			svg: 'image/svg+xml',
+			jxl: 'image/jxl',
 		};
 		return extensionsMap[extension] || '';
 	}
@@ -494,7 +544,7 @@ class MarkedResponsiveImages {
 	 * Logs a warning to the console if debug mode is enabled.
 	 *
 	 * @private
-	 * @param message The warning message to log.
+	 * @param {string} message - The warning message to log.
 	 */
 	#warn(message) {
 		if (this.#debug) {
@@ -506,8 +556,8 @@ class MarkedResponsiveImages {
 	 * Logs an error to the console if debug mode is enabled.
 	 *
 	 * @private
-	 * @param message The error message to log.
-	 * @param context Optional additional context to log with the error.
+	 * @param {string} message - The error message to log.
+	 * @param {Error|null} [context=null] - Optional additional context to log with the error.
 	 */
 	#error(message, context = null) {
 		if (this.#debug) {
@@ -533,6 +583,7 @@ class MarkedResponsiveImages {
  * @param {string} [options.class=''] - The class attribute to apply to rendered <img> tags.
  * @param {string} [options.pictureClass=''] - The class attribute to apply to the <picture> tag.
  * @param {string} [options.decoding='auto'] - The decoding attribute for the <img> tag.
+ * @param {Array<string>} [options.formatPriority=['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']] - The priority order for sorting <source> formats.
  * @returns {Object} Marked extension object (renderer config).
  */
 export function markedResponsiveImages(options = {}) {
