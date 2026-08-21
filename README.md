@@ -49,9 +49,9 @@ The extension looks for a specific pattern at the end of your filenames to gener
    Use one underscore (`_`) to separate different size variants.
 3. **Dimensions:**  
    Use a dash (`-`) to separate width and height.
-4. **[*optional*] Density:**  
+4. **[_optional_] Density:**  
    Use a dash (`-`) followed by a pixel density multiplier (e.g., `1x`, `1.5x`, `2x`) to instruct the browser to use display density rather than viewport width.
-5. **[*optional*] Extension:**  
+5. **[_optional_] Extension:**  
    Use a dash (`-`) to specify a file extension if it is different from the one used by the URL.
     - Supported formats: `jpg`, `jpeg`, `png`, `webp`, `avif`, `gif`, `svg`, `jxl`.
 
@@ -150,15 +150,139 @@ marked.use(
 ```
 
 <!-- prettier-ignore -->
-| Option | Type | Default | Description |
-| :-------------------- | :-------- | :------- | :-- |
-| `sizes`               | `string`  | `null`   | The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width. |
-| `class`               | `string`  | `''`     | The class attribute to apply to rendered `<img>` tags. |
-| `pictureClass`        | `string`  | `''`     | The class attribute to apply to the `<picture>` wrapper tag. |
-| `lazy`                | `boolean` | `true`   | Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization. |
-| `decoding`            | `string`  | `'auto'` | The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag. |
-| `debug`               | `boolean` | `false`  | Log warnings to the console when URLs cannot be parsed or formats are malformed. |
-| `renderSimpleImgTags` | `boolean` | `false`  | Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.<br/>_When enabled, format variations are automatically stripped out, as standard `<img>` tags do not support format negotiation._ |
-| `formatPriority`      | `Array<string>` | `['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']` | Defines the sorting priority for `<source>` formats. The default is ordered based on typical efficiency. |
+<table><thead>
+<tr>
+	<th>Option</th>
+	<th>Type</th>
+	<th>Default</th>
+	<th>Description</th>
+</tr>
+</thead><tbody><tr>
+<td>
+
+`sizes`</td>
+<td>
+
+`string`</td>
+<td>
+
+`null`</td>
+<td>
+
+The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width.</td>
+</tr>
+<tr>
+<td>
+
+`class`</td>
+<td>
+
+`string`</td>
+<td>
+
+`''`</td>
+<td>
+
+The class attribute to apply to rendered `<img>` tags.</td>
+</tr>
+<tr>
+<td>
+
+`pictureClass`</td>
+<td>
+
+`string`</td>
+<td>
+
+`''`</td>
+<td>
+
+The class attribute to apply to the `<picture>` wrapper tag.
+</td>
+</tr>
+<tr>
+<td>
+
+`lazy`</td>
+<td>
+
+`boolean`</td>
+<td>
+
+`true`</td>
+<td>
+
+Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization.</td>
+</tr>
+<tr>
+<td>
+
+`decoding`</td>
+<td>
+
+`string`</td>
+<td>
+
+`'auto'`</td>
+<td>
+
+The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag.</td>
+</tr>
+<tr>
+<td>
+
+`debug`</td>
+<td>
+
+`boolean`</td>
+<td>
+
+`false`</td>
+<td>Log warnings to the console when URLs cannot be parsed or formats are malformed.</td>
+</tr>
+<tr>
+<td>
+
+`renderSimpleImgTags`</td>
+<td>
+
+`boolean`</td>
+<td>
+
+`false`</td>
+<td>
+
+Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.
+
+_When enabled, format variations are automatically stripped out, as standard `<img>` tags do not support format negotiation._
+</td>
+</tr>
+<tr>
+<td>
+
+`formatPriority`</td>
+<td>
+
+`Array<string>`</td>
+<td><!-- prettier-ignore -->
+
+```
+['jxl',
+'avif',
+'webp',
+'png',
+'jpeg',
+'jpg',
+'gif',
+'svg'];
+```
+
+<!-- prettier-ignore end -->
+</td>
+<td>
+
+Defines the sorting priority for `<source>` formats. The default is ordered based on typical efficiency.</td>
+</tr>
+</tbody></table>
 
 <!-- prettier-ignore end -->
