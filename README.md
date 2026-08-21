@@ -150,124 +150,128 @@ marked.use(
 ```
 
 <!-- prettier-ignore -->
-<table><thead>
-<tr>
-	<th>Option</th>
-	<th>Type</th>
-	<th>Default</th>
-	<th>Description</th>
-</tr>
-</thead><tbody><tr>
-<td>
-
-`sizes`</td>
-<td>
-
-`string`</td>
-<td>
-
-`null`</td>
-<td>
-
-The `sizes` attribute that should be added to `<source>` or `<img>` tags. If empty, an automatic default is set based on the largest variant width.</td>
-</tr>
-<tr>
-<td>
-
-`class`</td>
-<td>
-
-`string`</td>
-<td>
-
-`''`</td>
-<td>
-
-The class attribute to apply to rendered `<img>` tags.</td>
-</tr>
-<tr>
-<td>
-
-`pictureClass`</td>
-<td>
-
-`string`</td>
-<td>
-
-`''`</td>
-<td>
-
-The class attribute to apply to the `<picture>` wrapper tag.
-</td>
-</tr>
-<tr>
-<td>
-
-`lazy`</td>
-<td>
-
-`boolean`</td>
-<td>
-
-`true`</td>
-<td>
-
-Adds [`loading="lazy"`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading) to images for better page load optimization.</td>
-</tr>
-<tr>
-<td>
-
-`decoding`</td>
-<td>
-
-`string`</td>
-<td>
-
-`'auto'`</td>
-<td>
-
-The [`decoding`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding) attribute strategy to apply to the `<img>` tag.</td>
-</tr>
-<tr>
-<td>
-
-`debug`</td>
-<td>
-
-`boolean`</td>
-<td>
-
-`false`</td>
-<td>Log warnings to the console when URLs cannot be parsed or formats are malformed.</td>
-</tr>
-<tr>
-<td>
-
-`renderSimpleImgTags`</td>
-<td>
-
-`boolean`</td>
-<td>
-
-`false`</td>
-<td>
-
-Enable to generate a simple `<img>` tag with a `srcset` attribute instead of a full `<picture>` element.
-
-_When enabled, format variations are automatically stripped out, as standard `<img>` tags do not support format negotiation._
-</td>
-</tr>
-<tr>
-<td>
-
-`formatPriority`</td>
-<td>
-
-`Array<string>`</td>
-<td><!-- prettier-ignore -->
-
-```
-['jxl',
+<table>
+	<thead>
+		<tr>
+			<th>Option</th>
+			<th>Type</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<p><code>sizes</code></p>
+			</td>
+			<td>
+				<p><code>string</code></p>
+			</td>
+			<td>
+				<p><code>null</code></p>
+			</td>
+			<td>
+				<p>The <code>sizes</code> attribute that should be added to <code>&lt;source&gt;</code> or <code>&lt;img&gt;</code> tags. If empty, an automatic default is set based on the largest variant width.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>class</code></p>
+			</td>
+			<td>
+				<p><code>string</code></p>
+			</td>
+			<td>
+				<p><code>''</code></p>
+			</td>
+			<td>
+				<p>The class attribute to apply to rendered <code>&lt;img&gt;</code> tags.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>pictureClass</code></p>
+			</td>
+			<td>
+				<p><code>string</code></p>
+			</td>
+			<td>
+				<p><code>''</code></p>
+			</td>
+			<td>
+				<p>The class attribute to apply to the <code>&lt;picture&gt;</code> wrapper tag.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>lazy</code></p>
+			</td>
+			<td>
+				<p><code>boolean</code></p>
+			</td>
+			<td>
+				<p><code>true</code></p>
+			</td>
+			<td>
+				<p>
+					Adds <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading" target="_blank" rel="noopener noreferrer"><code>loading="lazy"</code></a> to images for better page load optimization.
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>decoding</code></p>
+			</td>
+			<td>
+				<p><code>string</code></p>
+			</td>
+			<td>
+				<p><code>'auto'</code></p>
+			</td>
+			<td>
+				<p>
+					The <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decoding" target="_blank" rel="noopener noreferrer"><code>decoding</code></a> attribute strategy to apply to the <code>&lt;img&gt;</code> tag.
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>debug</code></p>
+			</td>
+			<td>
+				<p><code>boolean</code></p>
+			</td>
+			<td>
+				<p><code>false</code></p>
+			</td>
+			<td>Log warnings to the console when URLs cannot be parsed or formats are malformed.</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>renderSimpleImgTags</code></p>
+			</td>
+			<td>
+				<p><code>boolean</code></p>
+			</td>
+			<td>
+				<p><code>false</code></p>
+			</td>
+			<td>
+				<p>Enable to generate a simple <code>&lt;img&gt;</code> tag with a <code>srcset</code> attribute instead of a full <code>&lt;picture&gt;</code> element.</p>
+				<p>
+					<em>When enabled, format variations are automatically stripped out, as standard <code>&lt;img&gt;</code> tags do not support format negotiation.</em>
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>formatPriority</code></p>
+			</td>
+			<td>
+				<p><code>Array&lt;string&gt;</code></p>
+			</td>
+			<td>
+				<pre><code>['jxl',
 'avif',
 'webp',
 'png',
@@ -275,14 +279,13 @@ _When enabled, format variations are automatically stripped out, as standard `<i
 'jpg',
 'gif',
 'svg'];
-```
-
-<!-- prettier-ignore end -->
-</td>
-<td>
-
-Defines the sorting priority for `<source>` formats. The default is ordered based on typical efficiency.</td>
-</tr>
-</tbody></table>
+</code></pre>
+			</td>
+			<td>
+				<p>Defines the sorting priority for <code>&lt;source&gt;</code> formats. The default is ordered based on typical efficiency.</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
 
 <!-- prettier-ignore end -->
