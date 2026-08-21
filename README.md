@@ -1,4 +1,4 @@
-# [Marked Responsive Images](https://github.com/ELowry/MarkedResponsiveImages)
+# Marked Responsive Images
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![Latest GitHub release](https://img.shields.io/github/v/release/ELowry/MarkedResponsiveImages?logo=GitHub&color=a4785e)](https://github.com/ELowry/MarkedResponsiveImages/releases/latest) [![npm](https://img.shields.io/npm/v/marked-responsive-images?logo=npm&color=e29186)](https://www.npmjs.com/package/marked-responsive-images)
 
