@@ -145,6 +145,8 @@ marked.use(
 		decoding: 'auto', // {'async' | 'sync' | 'auto'}
 		renderSimpleImgTags: false, // {boolean}
 		formatPriority: ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg'], // {Array<string>}
+		lazyLoadThreshold: 0, // {number}
+		scoringWeights: null, // { {base?: Record<string, number>, char?: number} | null }
 	}),
 );
 ```
@@ -285,7 +287,65 @@ marked.use(
 				<p>Defines the sorting priority for <code>&lt;source&gt;</code> formats. The default is ordered based on typical efficiency.</p>
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<p><code>lazyLoadThreshold</code></p>
+			</td>
+			<td>
+				<p><code>number</code></p>
+			</td>
+			<td>
+				<p><code>0</code></p>
+			</td>
+			<td>
+				<p>The visual layout score threshold before lazy loading kicks in. Evaluates the parsed markdown to avoid lazy-loading images "above the fold". A value of <code>0</code> disables the scoring engine.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>scoringWeights</code></p>
+			</td>
+			<td>
+				<p><code>Object</code></p>
+			</td>
+			<td>
+				<p><code>null</code></p>
+			</td>
+			<td>
+				<p>Optionally overrides the engine's default layout estimators. Further details included below.</p>
+			</td>
+		</tr>
 	</tbody>
 </table>
 
 <!-- prettier-ignore end -->
+
+### Lazy Loading Scoring Threshold Scoring
+
+The `lazyLoadThreshold` feature works by estimating the vertical pixel height of your rendered markdown. It reads the [Marked token](https://github.com/markedjs/marked/blob/master/src/Tokens.ts) stream and assigns a "score" to each element before the HTML is generated, allowing the extension to skip lazy loading for images that appear "above the fold."
+
+The engine's default math is based on a simple heuristic: **10 points ≈ 1rem of vertical layout space.**
+
+When overriding the `scoringWeights` option, you can adjust two properties to match your specific CSS layout:
+
+- **`base`:** A dictionary of token types and their base vertical footprint. This accounts for block-level margins, padding, and fixed heights.
+    - _Example:_ If your `table` elements typically have `1.5rem` of top/bottom margin and `0.5rem` of padding, you would assign a base weight of `40` (4rem total overhead). Fixed-height elements like images bypass character counting completely—a typical 16:9 image capping out at 30rem tall would have a base weight of `300`.
+- **`char`:** A multiplier applied to the raw text length of leaf nodes (paragraphs, text, code blocks) to estimate wrapped text height.
+    - **The formula:** `(line-height in rem * 10) / characters per line`
+    - _Example:_ If your container wraps text at roughly **80 characters**, and your CSS `line-height` is **`1.6rem`** (16 points), your `char` weight should be `16 / 80 = 0.2`. Every 5 characters parsed will add 1 point (0.1rem) to the layout score.
+
+```js
+marked.use(
+	markedResponsiveImages({
+		lazy: true,
+		lazyLoadThreshold: 800, // Avoids lazy-loading for images that begin within roughly ~80rem
+		scoringWeights: {
+			base: {
+				image: 400, // Estimate images are roughly ~40rem tall instead of the default ~30rem
+				heading: 60, // Estimate a margin of roughly ~6rem instead of the default ~5rem
+			},
+			char: 0.2, // Custom multiplier based on your typography
+		},
+	}),
+);
+```

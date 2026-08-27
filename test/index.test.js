@@ -300,4 +300,43 @@ describe('Marked Responsive Images Extension', () => {
 			assert.match(output, /sizes="\(max-width: 300px\) 100vw, 300px"/);
 		});
 	});
+
+	describe('with lazyLoadThreshold option enabled', () => {
+		const markedLazyThreshold = new Marked();
+		markedLazyThreshold.use(
+			markedResponsiveImages({
+				// Set threshold to 400.
+				// First image adds 300, so it passes.
+				// Second image hits when score is > 300, so it fails (lazy loads).
+				lazyLoadThreshold: 400,
+			}),
+		);
+
+		it('should omit loading="lazy" for the first image before the threshold is met', () => {
+			const input = '# Title\n\n![First Image](img/pic__100-100_200-200.jpg)';
+			const output = markedLazyThreshold.parse(input);
+
+			assert.doesNotMatch(output, /loading="lazy"/);
+		});
+
+		it('should apply loading="lazy" to subsequent images after the threshold is exceeded', () => {
+			const input =
+				'# Title\n\n![First Image](img/pic__100-100_200-200.jpg)\n\n![Second Image](img/pic2__100-100_200-200.jpg)';
+			const output = markedLazyThreshold.parse(input);
+
+			// The output should contain exactly one instance of loading="lazy" (on the second image)
+			const lazyMatches = output.match(/loading="lazy"/g);
+			assert.ok(lazyMatches, 'At least one image should have loading="lazy"');
+			assert.equal(lazyMatches.length, 1, 'Exactly one image should be lazy-loaded');
+		});
+
+		it('should reset the score on subsequent parse calls', () => {
+			// Parse once (exceeds threshold internally)
+			markedLazyThreshold.parse('![First](img/pic1__100-100.jpg)\n![Second](img/pic2__100-100.jpg)');
+
+			// Parse a brand new document - the first image should NOT be lazy if the score correctly reset
+			const output = markedLazyThreshold.parse('![New First](img/pic3__100-100.jpg)');
+			assert.doesNotMatch(output, /loading="lazy"/);
+		});
+	});
 });
