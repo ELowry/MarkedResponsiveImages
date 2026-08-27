@@ -328,11 +328,17 @@ The engine's default math is based on a simple heuristic: **10 points ≈ 1rem o
 
 When overriding the `scoringWeights` option, you can adjust two properties to match your specific CSS layout:
 
-- **`base`:** A dictionary of token types and their base vertical footprint. This accounts for block-level margins, padding, and fixed heights.
-    - _Example:_ If your `table` elements typically have `1.5rem` of top/bottom margin and `0.5rem` of padding, you would assign a base weight of `40` (4rem total overhead). Fixed-height elements like images bypass character counting completely—a typical 16:9 image capping out at 30rem tall would have a base weight of `300`.
-- **`char`:** A multiplier applied to the raw text length of leaf nodes (paragraphs, text, code blocks) to estimate wrapped text height.
-    - **The formula:** `(line-height in rem * 10) / characters per line`
-    - _Example:_ If your container wraps text at roughly **80 characters**, and your CSS `line-height` is **`1.6rem`** (16 points), your `char` weight should be `16 / 80 = 0.2`. Every 5 characters parsed will add 1 point (0.1rem) to the layout score.
+- **`base`:**  
+  A dictionary of token types and their base vertical footprint. This accounts for block-level margins, padding, and fixed heights.
+    > _Example:_  
+    > If your `table` elements typically have `1.5rem` of top/bottom margin and `0.5rem` of padding, you would assign a base weight of `40` (4rem total overhead). Fixed-height elements like images bypass character counting completely—a typical 16:9 image capping out at 30rem tall would have a base weight of `300`.
+- **`char`:**  
+  A multiplier applied to the raw text length of leaf nodes (paragraphs, text, code blocks) to estimate wrapped text height.  
+  **The formula:** `(line-height in rem * 10) / characters per line`
+    > _Example:_  
+    > If your container wraps text at roughly **80 characters**, and your CSS `line-height` is **`1.6rem`** (16 points), your `char` weight should be `16 / 80 = 0.2`. Every 5 characters parsed will add 1 point (0.1rem) to the layout score.
+
+#### Example configuation
 
 ```js
 marked.use(
