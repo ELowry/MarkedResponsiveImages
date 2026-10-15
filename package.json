@@ -27,7 +27,7 @@
 		"test": "node --test \"test/**/*.test.js\" && node scripts/verify-version.mjs",
 		"build": "npm run format && npm run lint && npm run test && tsdown src/index.js --format cjs,esm,umd --global-name markedResponsiveImages --sourcemap --clean && node scripts/copy-definitions.mjs",
 		"dev": "tsdown src/index.js --format cjs,esm,umd --global-name markedResponsiveImages --sourcemap --watch",
-		"lint": "eslint src",
+		"lint": "eslint src && npx tsc --noEmit",
 		"format": "prettier --write \"src/**/*.{js,ts}\"",
 		"check-format": "prettier --check \"src/**/*.{js,ts}\"",
 		"update": "npm update && npm ci && npm i",
@@ -51,13 +51,13 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"eslint": "^10.9.1",
+		"eslint": "^10.12.0",
 		"eslint-config-prettier": "^10.1.8",
-		"globals": "^17.11.0",
-		"marked": "^18.0.11",
-		"prettier": "^3.9.6",
+		"globals": "^17.13.0",
+		"marked": "^18.1.1",
+		"prettier": "^3.9.10",
 		"prettier-plugin-css-order": "^2.2.0",
-		"tsdown": "^0.22.14",
+		"tsdown": "^0.23.1",
 		"typescript": "^7.0.2"
 	}
 }
