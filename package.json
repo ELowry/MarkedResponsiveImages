@@ -10,7 +10,7 @@
 	"bugs": {
 		"url": "https://github.com/ELowry/MarkedResponsiveImages/issues"
 	},
-	"homepage": "https://github.com/ELowry/MarkedResponsiveImages#readme",
+	"homepage": "https://eric-lowry.com/projects/MarkedResponsiveImages",
 	"source": "src/index.js",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.mjs",
