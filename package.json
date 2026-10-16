@@ -1,6 +1,6 @@
 {
 	"name": "marked-responsive-images",
-	"version": "2.3.0",
+	"version": "2.4.0",
 	"description": "A robust marked extension for handling responsive images with srcset generation.",
 	"type": "module",
 	"repository": {

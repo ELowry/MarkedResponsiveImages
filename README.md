@@ -147,6 +147,9 @@ marked.use(
 		formatPriority: ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg'], // {Array<string>}
 		lazyLoadThreshold: 0, // {number}
 		scoringWeights: null, // { {base?: Record<string, number>, char?: number} | null }
+		autoFetchPriority: false, // {boolean}
+		fetchPriorityMinWidth: 600, // {number}
+		fetchPriorityThreshold: 200, // {number}
 	}),
 );
 ```
@@ -315,6 +318,48 @@ marked.use(
 				<p>Optionally overrides the engine's default layout estimators. Further details included below.</p>
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<p><code>autoFetchPriority</code></p>
+			</td>
+			<td>
+				<p><code>boolean</code></p>
+			</td>
+			<td>
+				<p><code>false</code></p>
+			</td>
+			<td>
+				<p>If enabled, large images "above the fold" will get <code>fetchpriority="high"</code> to optimize early load performance (also prevents lazy-loading).</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>fetchPriorityMinWidth</code></p>
+			</td>
+			<td>
+				<p><code>number</code></p>
+			</td>
+			<td>
+				<p><code>600</code></p>
+			</td>
+			<td>
+				<p>The minimum image width (in pixels) required for an image to receive <code>fetchpriority="high"</code> when <code>autoFetchPriority</code> is enabled.</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p><code>fetchPriorityThreshold</code></p>
+			</td>
+			<td>
+				<p><code>number</code></p>
+			</td>
+			<td>
+				<p><code>200</code></p>
+			</td>
+			<td>
+				<p>The maximum visual layout score an image can have to qualify for <code>autoFetchPriority</code>. Helps ensure only images "above the fold" are assigned fetch priority.</p>
+			</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -345,6 +390,9 @@ marked.use(
 	markedResponsiveImages({
 		lazy: true,
 		lazyLoadThreshold: 800, // Avoids lazy-loading for images that begin within roughly ~80rem
+		autoFetchPriority: true,
+		fetchPriorityMinWidth: 800, // Prevents `fetchpriority="high"` for images under 800px wide
+		fetchPriorityThreshold: 300, // Allows `fetchpriority="high"` for large images that begin within roughly ~30rem
 		scoringWeights: {
 			base: {
 				image: 400, // Estimate images are roughly ~40rem tall instead of the default ~30rem

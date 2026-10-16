@@ -5,7 +5,7 @@ import { MarkedExtension } from 'marked';
  */
 export interface ResponsiveImageOptions {
 	/**
-	 * The value used for the image element's sizes attribute.
+	 * The value used for the image element's sizes attribute.  
 	 * If omitted, a default sizes attribute is generated based on the largest variant.
 	 * @example "(max-width: 600px) 480px, 800px"
 	 */
@@ -21,8 +21,8 @@ export interface ResponsiveImageOptions {
 	 */
 	lazy?: boolean;
 	/**
-	 * Whether to generate a simple <img> tag instead of a full <picture> structure.
-	 * Note: When enabled, format variations (like WebP) are automatically stripped out.
+	 * Whether to generate a simple <img> tag instead of a full <picture> structure.  
+	 * *Note: When enabled, format variations (like WebP) are automatically stripped out.*
 	 * @default false
 	 */
 	renderSimpleImgTags?: boolean;
@@ -58,12 +58,27 @@ export interface ResponsiveImageOptions {
 		base?: Record<string, number>;
 		char?: number;
 	} | null;
+
+	/**
+	 * Whether to automatically add `fetchpriority="high"` to large images near the top.
+	 */
+	autoFetchPriority?: boolean;
+
+	/**
+	 * The minimum image width for `autoFetchPriority` to trigger.
+	 */
+	fetchPriorityMinWidth?: number;
+
+	/**
+	 * The maximum score to enable `autoFetchPriority`.
+	 */
+	fetchPriorityThreshold?: number;
 }
 
 /**
- * A Marked extension class for handling responsive images.
+ * A Marked extension class for handling responsive images.  
  * Encapsulates parsing logic and configuration for generating responsive image sources.
  * @param options - Configuration options.
  * @returns The Marked extension object.
  */
-export function markedResponsiveImages(options?: ResponsiveImageOptions): any;
+export function markedResponsiveImages(options?: ResponsiveImageOptions): MarkedExtension;

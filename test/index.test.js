@@ -332,11 +332,49 @@ describe('Marked Responsive Images Extension', () => {
 
 		it('should reset the score on subsequent parse calls', () => {
 			// Parse once (exceeds threshold internally)
-			markedLazyThreshold.parse('![First](img/pic1__100-100.jpg)\n![Second](img/pic2__100-100.jpg)');
+			markedLazyThreshold.parse(
+				'![First](img/pic1__100-100.jpg)\n![Second](img/pic2__100-100.jpg)',
+			);
 
 			// Parse a brand new document - the first image should NOT be lazy if the score correctly reset
 			const output = markedLazyThreshold.parse('![New First](img/pic3__100-100.jpg)');
 			assert.doesNotMatch(output, /loading="lazy"/);
+		});
+	});
+
+	describe('with autoFetchPriority option enabled', () => {
+		const markedLCP = new Marked();
+		markedLCP.use(
+			markedResponsiveImages({
+				autoFetchPriority: true,
+				fetchPriorityMinWidth: 600,
+				lazy: true,
+			}),
+		);
+
+		it('should apply fetchpriority="high" to a large image early in the document and remove lazy loading', () => {
+			const input = '# Title\n\n![Hero](img/hero__400-300_800-600.jpg)';
+			const output = markedLCP.parse(input);
+
+			assert.match(output, /fetchpriority="high"/);
+			assert.doesNotMatch(output, /loading="lazy"/);
+		});
+
+		it('should ignore early images that are too small', () => {
+			const input = '# Title\n\n![Icon](img/icon__100-100_200-200.jpg)';
+			const output = markedLCP.parse(input);
+
+			assert.doesNotMatch(output, /fetchpriority="high"/);
+		});
+
+		it('should only apply fetchpriority to the first qualifying image', () => {
+			const input =
+				'# Title\n\n![Hero 1](img/hero1__800-600.jpg)\n\n![Hero 2](img/hero2__800-600.jpg)';
+			const output = markedLCP.parse(input);
+
+			const priorityMatches = output.match(/fetchpriority="high"/g);
+			assert.ok(priorityMatches);
+			assert.equal(priorityMatches.length, 1, 'Only one image should receive fetchpriority');
 		});
 	});
 });

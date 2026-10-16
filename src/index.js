@@ -3,7 +3,7 @@ import { UrlParser } from './modules/urlParser.js';
 import { MarkupBuilder } from './modules/markupBuilder.js';
 
 /**
- * A Marked extension class for handling responsive images.
+ * A Marked extension class for handling responsive images.  
  * Encapsulates parsing logic and configuration for generating responsive image sources.
  *
  * @param {Object} [options={}] - Configuration options.
@@ -17,6 +17,8 @@ import { MarkupBuilder } from './modules/markupBuilder.js';
  * @param {Array<string>} [options.formatPriority] - The priority order for sorting <source> formats.
  * @param {number} [options.lazyLoadThreshold=0] - The threshold score before lazy loading kicks in. A value of 0 disables the feature.
  * @param {Object} [options.scoringWeights=null] - Custom weights to override the ScoringEngine defaults.
+ * @param {boolean} [options.autoFetchPriority=false] - Whether to automatically add fetchpriority="high" to the highest scoring early image.
+ * @param {number} [options.fetchPriorityMinWidth=600] - The minimum intrinsic width required for an image to qualify for automatic fetch priority.
  */
 class MarkedResponsiveImages {
 	/**
@@ -97,6 +99,27 @@ class MarkedResponsiveImages {
 	#scoringWeights;
 
 	/**
+	 * Whether to automatically add `fetchpriority="high"` to large images near the top.
+	 * @private
+	 * @type {boolean}
+	 */
+	#autoFetchPriority;
+
+	/**
+	 * The minimum image width for `autoFetchPriority` to trigger.
+	 * @private
+	 * @type {number}
+	 */
+	#fetchPriorityMinWidth;
+
+	/**
+	 * The maximum score to enable `autoFetchPriority`.
+	 * @private
+	 * @type {number}
+	 */
+	#fetchPriorityThreshold;
+
+	/**
 	 * Creates an instance of the MarkedResponsiveImages.
 	 *
 	 * @param {Object} [options={}] - Configuration options.
@@ -110,6 +133,8 @@ class MarkedResponsiveImages {
 	 * @param {Array<string>} [options.formatPriority] - The priority order for sorting <source> formats.
 	 * @param {number} [options.lazyLoadThreshold=0] - The threshold score before lazy loading kicks in.
 	 * @param {Object} [options.scoringWeights=null] - Custom weights to override the ScoringEngine defaults.
+	 * @param {boolean} [options.autoFetchPriority=false] - Whether to automatically add fetchpriority="high" to the highest scoring early image.
+	 * @param {number} [options.fetchPriorityMinWidth=600] - The minimum intrinsic width required for an image to qualify for automatic fetch priority.
 	 */
 	constructor(options = {}) {
 		this.#defaultSizes = options.sizes ?? null;
@@ -125,6 +150,9 @@ class MarkedResponsiveImages {
 			: ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg'];
 		this.#lazyLoadThreshold = options.lazyLoadThreshold ?? 0;
 		this.#scoringWeights = options.scoringWeights ?? null;
+		this.#autoFetchPriority = options.autoFetchPriority ?? false;
+		this.#fetchPriorityMinWidth = options.fetchPriorityMinWidth ?? 600;
+		this.#fetchPriorityThreshold = options.fetchPriorityThreshold ?? 200;
 
 		this.#regex =
 			/^(.*)__((?:\d+-\d+(?:-[a-z0-9.]+){0,2})(?:_(?:\d+-\d+(?:-[a-z0-9.]+){0,2}))*)(\.[^.]+)$/i;
@@ -143,21 +171,34 @@ class MarkedResponsiveImages {
 			},
 		};
 
-		if (this.#lazyLoadThreshold > 0) {
+		if (this.#lazyLoadThreshold > 0 || this.#autoFetchPriority) {
 			let currentScore = 0;
 			let seenTokens = new WeakSet();
+			let lcpCandidateFound = false;
 
 			extensionConfig.hooks = {
 				preprocess: (markdown) => {
 					currentScore = 0;
 					seenTokens = new WeakSet();
+					lcpCandidateFound = false;
 					return markdown;
 				},
 			};
 
 			extensionConfig.walkTokens = (token) => {
 				if (token.type === 'image') {
-					token.preventLazy = currentScore < this.#lazyLoadThreshold;
+					if (this.#lazyLoadThreshold > 0) {
+						token.preventLazy = currentScore < this.#lazyLoadThreshold;
+					}
+
+					if (
+						this.#autoFetchPriority
+						&& !lcpCandidateFound
+						&& currentScore < this.#fetchPriorityThreshold
+					) {
+						token.isPriorityCandidate = true;
+						lcpCandidateFound = true;
+					}
 				}
 
 				currentScore += ScoringEngine.calculateScore(
@@ -207,6 +248,13 @@ class MarkedResponsiveImages {
 			const variants = UrlParser.processVariants(sizesPart, originalExtension);
 			const largest = variants[variants.length - 1];
 
+			let fetchPriorityAttribute = '';
+
+			if (token.isPriorityCandidate && largest.width >= this.#fetchPriorityMinWidth) {
+				fetchPriorityAttribute = ' fetchpriority="high"';
+				token.preventLazy = true;
+			}
+
 			const sizesValue =
 				this.#defaultSizes || `(max-width: ${largest.width}px) 100vw, ${largest.width}px`;
 			const sizesAttribute = ` sizes="${MarkupBuilder.stringEscape(sizesValue)}"`;
@@ -243,7 +291,7 @@ class MarkedResponsiveImages {
 					warnCallback,
 				);
 
-				return `<img${classes} src="${safeHref}" srcset="${srcset}"${sizesAttribute} width="${largest.width}" height="${largest.height}" alt="${MarkupBuilder.stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}>`;
+				return `<img${classes} src="${safeHref}" srcset="${srcset}"${sizesAttribute} width="${largest.width}" height="${largest.height}" alt="${MarkupBuilder.stringEscape(text)}"${titleAttribute}${fetchPriorityAttribute}${lazyLoadingAttribute}${decodingAttribute}>`;
 			}
 
 			const sourcesHtml = MarkupBuilder.generatePictureSources(
@@ -260,7 +308,7 @@ class MarkedResponsiveImages {
 				warnCallback,
 			);
 
-			return `<picture${pictureClasses}>${sourcesHtml}<img${classes} src="${safeHref}" width="${largest.width}" height="${largest.height}" alt="${MarkupBuilder.stringEscape(text)}"${titleAttribute}${lazyLoadingAttribute}${decodingAttribute}></picture>`;
+			return `<picture${pictureClasses}>${sourcesHtml}<img${classes} src="${safeHref}" width="${largest.width}" height="${largest.height}" alt="${MarkupBuilder.stringEscape(text)}"${titleAttribute}${fetchPriorityAttribute}${lazyLoadingAttribute}${decodingAttribute}></picture>`;
 		} catch (error) {
 			this.#error(`Error generating HTML for ${filename}`, error);
 			return false;
@@ -298,8 +346,8 @@ class MarkedResponsiveImages {
 }
 
 /**
- * A Marked extension class for handling responsive images.
- * Encapsulates parsing logic and configuration for generating responsive image sources.
+ * A Marked extension class for handling responsive images.  
+ * Encapsulates parsing logic and configuration for generating responsive image sources.  
  * Usage: `marked.use(responsiveImages({ /* options *\/ }))`
  *
  * @param {Object} [options={}] - Configuration options.
@@ -313,6 +361,8 @@ class MarkedResponsiveImages {
  * @param {Array<string>} [options.formatPriority] - The priority order for sorting <source> formats.
  * @param {number} [options.lazyLoadThreshold=0] - The threshold score before lazy loading kicks in.
  * @param {Object} [options.scoringWeights=null] - Custom weights to override the ScoringEngine defaults.
+ * @param {boolean} [options.autoFetchPriority=false] - Whether to automatically add fetchpriority="high" to the highest scoring early image.
+ * @param {number} [options.fetchPriorityMinWidth=600] - The minimum intrinsic width required for an image to qualify for automatic fetch priority.
  * @returns {Object} Marked extension object (renderer config).
  */
 export function markedResponsiveImages(options = {}) {
