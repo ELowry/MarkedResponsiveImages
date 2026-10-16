@@ -70,7 +70,7 @@ class MarkupBuilderController {
 			finalUrl = `${cleanPath}${search}${hash}`;
 		}
 
-		return finalUrl;
+		return this.stringEscape(finalUrl);
 	}
 
 	/**
