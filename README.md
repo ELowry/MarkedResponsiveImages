@@ -365,9 +365,9 @@ marked.use(
 
 <!-- prettier-ignore end -->
 
-### Lazy Loading Scoring Threshold Scoring
+### Lazy Loading & Fetch Priority Threshold Scoring
 
-The `lazyLoadThreshold` feature works by estimating the vertical pixel height of your rendered markdown. It reads the [Marked token](https://github.com/markedjs/marked/blob/master/src/Tokens.ts) stream and assigns a "score" to each element before the HTML is generated, allowing the extension to skip lazy loading for images that appear "above the fold."
+The `lazyLoadThreshold` and `autoFetchPriority` features work by estimating the vertical pixel height of your rendered markdown. It reads the [Marked token](https://github.com/markedjs/marked/blob/master/src/Tokens.ts) stream and assigns a "score" to each element before the HTML is generated, allowing the extension to skip lazy loading or even assign `fetchpriority="high"` for images that appear "above the fold."
 
 The engine's default math is based on a simple heuristic: **10 points ≈ 1rem of vertical layout space.**
 
