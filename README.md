@@ -83,7 +83,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
     ```html
     <picture>
     	<source
-    		srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
+    		srcset="img/photo__400-300.jpg 400w, photo__400-300_800-600.jpg.jpg 800w"
     		type="image/jpeg"
     	/>
     	<img
@@ -113,7 +113,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
     		type="image/webp"
     	/>
     	<source
-    		srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
+    		srcset="img/photo__400-300.jpg 400w, img/photo__400-300-avif~webp~_800-600-avif~webp~.jpg 800w"
     		type="image/jpeg"
     	/>
     	<img
@@ -134,7 +134,7 @@ The extension looks for a specific pattern at the end of your filenames to gener
 - **Resulting HTML:**
     ```html
     <picture>
-    	<source srcset="img/ui__400-300.png 1x, img/ui__800-600.png 2x" type="image/png" />
+    	<source srcset="img/ui__400-300.png 1x, img/ui__400-300-1x_800-600-2x.png 2x" type="image/png" />
     	<img
     		src="img/ui__400-300-1x_800-600-2x.png"
     		width="800"
