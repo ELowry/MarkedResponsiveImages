@@ -35,29 +35,33 @@ const html = marked.parse('![My Image](assets/hero__400-300_800-600.jpg)');
 ## Naming Convention
 
 > [!TIP]  
-> I have written a [PowerShell automation script](https://gist.github.com/ELowry/0fa9fe7d0597fc321b06b83a2954e605) to automatically generate image size variants, WebP alternatives, and output a fully formed Markedown image link.
+> I have written a [PowerShell automation script](https://gist.github.com/ELowry/0fa9fe7d0597fc321b06b83a2954e605) to automatically generate image size variants, modern format alternatives, and output a fully formed Markdown image link.
 
 ### Naming the Main File
 
 The extension looks for a specific pattern at the end of your filenames to generate the `<source>` tags and/or `srcset` attribute.
 
-**Pattern:** `filename__width-height[-density][-extension]_[…]_currentFileWidth-currentFileHeight.png`
+**Pattern:** `filename__width-height[-density][-extension[~extension...]]_[…]_currentFileWidth-currentFileHeight.ext`
 
 1. **Separator:**  
    Use two underscores (`__`) to separate the base name from the sizes.
 2. **Variants:**  
-   Use one underscore (`_`) to separate different size variants.
+   Use one underscore (`_`) to separate different size variants or breakpoints.
 3. **Dimensions:**  
    Use a dash (`-`) to separate width and height.
 4. **[_optional_] Density:**  
    Use a dash (`-`) followed by a pixel density multiplier (e.g., `1x`, `1.5x`, `2x`) to instruct the browser to use display density rather than viewport width.
-5. **[_optional_] Extension:**  
-   Use a dash (`-`) to specify a file extension if it is different from the one used by the URL.
+5. **[_optional_] Extension(s):**  
+   Use a dash (`-`) to specify a file extension if it is different from the one used by the URL. To serve multiple formats at the same dimension, separate them with a tilde (`~`). If you end the sequence with a tilde (e.g., `-avif~webp~`), it will automatically include the default extension of the original fallback file.
     - Supported formats: `jpg`, `jpeg`, `png`, `webp`, `avif`, `gif`, `svg`, `jxl`.
 
 > [!NOTE]  
+> **Legacy Backward Compatibility:**  
+> The legacy format (repeating identical dimensions separated by underscores to declare different extensions, e.g., `800-600-webp_800-600.jpg`) remains fully supported. You can mix and match both conventions safely.
+
+> [!NOTE]  
 > **The "full name" image must exist on your server.**  
-> The image path you write in Markdown (e.g., `hero__400-300_800-600.jpg`) is used as the **graceful fallback**. This raw filename is assigned to the `src` attribute of the inner `<img>` tag and will be the only image loaded if the extension is disabled or if the Markdown is viewed in an environment that doesn't support responsive images.
+> The image path you write in Markdown (e.g., `hero__400-300-avif~_800-600-avif~.jpg`) is used as the **graceful fallback**. This raw filename is assigned to the `src` attribute of the inner `<img>` tag and will be the only image loaded if the extension is disabled or if the Markdown is viewed in an environment that doesn't support responsive images.
 
 > [!NOTE]  
 > **Format Ordering:**  
@@ -95,15 +99,25 @@ The extension looks for a specific pattern at the end of your filenames to gener
 
 - **Markdown:**
     ```md
-    ![Web optimized photo example](img/photo__800-600-webp_800-600.jpg)
+    ![Web optimized photo example](img/photo__400-300-avif~webp~_800-600-avif~webp~.jpg)
     ```
 - **Resulting HTML:**
     ```html
     <picture>
-    	<source srcset="img/photo__800-600.webp 800w" type="image/webp" />
-    	<source srcset="img/photo__800-600.jpg 800w" type="image/jpeg" />
+    	<source
+    		srcset="img/photo__400-300.avif 400w, img/photo__800-600.avif 800w"
+    		type="image/avif"
+    	/>
+    	<source
+    		srcset="img/photo__400-300.webp 400w, img/photo__800-600.webp 800w"
+    		type="image/webp"
+    	/>
+    	<source
+    		srcset="img/photo__400-300.jpg 400w, img/photo__800-600.jpg 800w"
+    		type="image/jpeg"
+    	/>
     	<img
-    		src="img/photo__800-600-webp_800-600.jpg"
+    		src="img/photo__400-300-avif~webp~_800-600-avif~webp~.jpg"
     		width="800"
     		height="600"
     		alt="Web optimized photo example"

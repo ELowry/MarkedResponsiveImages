@@ -155,7 +155,7 @@ class MarkedResponsiveImages {
 		this.#fetchPriorityThreshold = options.fetchPriorityThreshold ?? 200;
 
 		this.#regex =
-			/^(.*)__((?:\d+-\d+(?:-[a-z0-9.]+){0,2})(?:_(?:\d+-\d+(?:-[a-z0-9.]+){0,2}))*)(\.[^.]+)$/i;
+			/^(.*)__((?:\d+-\d+(?:-[a-z0-9.~]+){0,2})(?:_(?:\d+-\d+(?:-[a-z0-9.~]+){0,2}))*)(\.[^.]+)$/i;
 	}
 
 	/**

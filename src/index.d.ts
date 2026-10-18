@@ -43,7 +43,7 @@ export interface ResponsiveImageOptions {
 	decoding?: 'auto' | 'sync' | 'async' | string;
 	/**
 	 * The priority order for sorting <source> formats.
-	 * @default ['jxl', 'avif', 'webp', 'png', 'jpeg', 'jpg', 'gif', 'svg']
+	 * @default ["jxl", "avif", "webp", "png", "jpeg", "jpg", "gif", "svg"]
 	 */
 	formatPriority?: string[];
 	/**

@@ -52,32 +52,38 @@ class UrlParserController {
 	processVariants(sizesPart, originalExtension) {
 		const tokens = sizesPart.split('_');
 		return tokens
-			.map((token, index) => {
+			.flatMap((token, index) => {
 				const parts = token.split('-');
 				const width = parseInt(parts[0], 10);
 				const height = parseInt(parts[1], 10);
 
 				let descriptor = `${width}w`;
-				let extension = originalExtension;
+				let extensions = [originalExtension];
 
 				for (let partIndex = 2; partIndex < parts.length; partIndex++) {
 					if (/^\d+(?:\.\d+)?x$/i.test(parts[partIndex])) {
 						descriptor = parts[partIndex].toLowerCase();
 					} else {
-						extension = `.${parts[partIndex]}`;
+						if (parts[partIndex].includes('~')) {
+							extensions = parts[partIndex].split('~').map((ext) => {
+								return ext === '' ? originalExtension : `.${ext}`;
+							});
+						} else {
+							extensions = [`.${parts[partIndex]}`];
+						}
 					}
 				}
 
-				const isOriginal = index === tokens.length - 1;
+				const isLastToken = index === tokens.length - 1;
 
-				return {
+				return extensions.map((ext) => ({
 					width: width,
 					height: height,
-					extension: extension,
+					extension: ext,
 					descriptor: descriptor,
 					token: `${width}-${height}`,
-					isOriginal: isOriginal,
-				};
+					isOriginal: isLastToken && ext === originalExtension,
+				}));
 			})
 			.sort((a, b) => a.width - b.width);
 	}

@@ -14,9 +14,8 @@ describe('Marked Responsive Images Extension', () => {
 			}),
 		);
 
-		it('should sort <source> elements based on the default format priority order', () => {
-			// Testing formats out of order: webp, jpg, avif, jxl
-			const input = '![Picture](img/pic__400-300-webp_400-300-avif_400-300-jxl_400-300.jpg)';
+		it('should sort <source> elements using the legacy underscore syntax', () => {
+			const input = '![Legacy](img/pic__400-300-webp_400-300-avif_400-300-jxl_400-300.jpg)';
 			const output = markedPic.parse(input);
 
 			assert.match(output, /<picture>/);
@@ -25,20 +24,57 @@ describe('Marked Responsive Images Extension', () => {
 			const avifIndex = output.indexOf('type="image/avif"');
 			const webpIndex = output.indexOf('type="image/webp"');
 
-			// Assert they exist
 			assert.ok(jxlIndex !== -1, 'JXL source missing');
 			assert.ok(avifIndex !== -1, 'AVIF source missing');
 			assert.ok(webpIndex !== -1, 'WebP source missing');
 
-			// Assert default efficiency priority: jxl -> avif -> webp -> original (jpg fallback)
 			assert.ok(jxlIndex < avifIndex, 'JXL should appear before AVIF');
 			assert.ok(avifIndex < webpIndex, 'AVIF should appear before WebP');
 
-			// The original JPG will still be parsed as the fallback src inside the <img>
 			assert.match(
 				output,
 				/<img src="img\/pic__400-300-webp_400-300-avif_400-300-jxl_400-300\.jpg"/,
 			);
+		});
+
+		it('should sort <source> elements using the modern tilde syntax', () => {
+			const input = '![Modern](img/pic__400-300-webp~avif~jxl~.jpg)';
+			const output = markedPic.parse(input);
+
+			assert.match(output, /<picture>/);
+
+			const jxlIndex = output.indexOf('type="image/jxl"');
+			const avifIndex = output.indexOf('type="image/avif"');
+			const webpIndex = output.indexOf('type="image/webp"');
+
+			assert.ok(jxlIndex !== -1, 'JXL source missing');
+			assert.ok(avifIndex !== -1, 'AVIF source missing');
+			assert.ok(webpIndex !== -1, 'WebP source missing');
+
+			assert.ok(jxlIndex < avifIndex, 'JXL should appear before AVIF');
+			assert.ok(avifIndex < webpIndex, 'AVIF should appear before WebP');
+
+			assert.match(output, /<img src="img\/pic__400-300-webp~avif~jxl~\.jpg"/);
+		});
+
+		it('should correctly parse and sort a mix of legacy and modern syntaxes', () => {
+			const input = '![Mixed](img/pic__400-300-webp_400-300-jxl~avif~.jpg)';
+			const output = markedPic.parse(input);
+
+			assert.match(output, /<picture>/);
+
+			const jxlIndex = output.indexOf('type="image/jxl"');
+			const avifIndex = output.indexOf('type="image/avif"');
+			const webpIndex = output.indexOf('type="image/webp"');
+
+			assert.ok(jxlIndex !== -1, 'JXL source missing');
+			assert.ok(avifIndex !== -1, 'AVIF source missing');
+			assert.ok(webpIndex !== -1, 'WebP source missing');
+
+			assert.ok(jxlIndex < avifIndex, 'JXL should appear before AVIF');
+			assert.ok(avifIndex < webpIndex, 'AVIF should appear before WebP');
+
+			assert.match(output, /<img src="img\/pic__400-300-webp_400-300-jxl~avif~\.jpg"/);
 		});
 
 		it('should respect a custom formatPriority array when sorting <source> elements', () => {
@@ -49,7 +85,7 @@ describe('Marked Responsive Images Extension', () => {
 				}),
 			);
 
-			const input = '![Custom Priority](img/test__400-300-avif_400-300-webp_400-300.png)';
+			const input = '![Custom Priority](img/test__400-300-avif~webp~.png)';
 			const output = markedCustomPriority.parse(input);
 
 			const webpIndex = output.indexOf('type="image/webp"');
@@ -210,16 +246,16 @@ describe('Marked Responsive Images Extension', () => {
 			assert.match(output, /sizes="\(max-width: 600px\) 100vw, 50vw"/);
 		});
 
-		it('should allow unique sizes of varying formats, but deduplicate identical widths by preferring the original extension', () => {
-			// 400-300 is only webp. 800-600 has BOTH webp and jpg.
-			const input = '![Mixed](img/pic__400-300-webp_800-600-webp_800-600.jpg)';
+		it('should allow unique sizes of varying formats, deduplicating identical widths with a mixed syntax', () => {
+			// 400-300 is webp (legacy syntax). 800-600 has BOTH webp and jpg (modern syntax).
+			const input = '![Mixed](img/pic__400-300-webp_800-600-webp~.jpg)';
 			const output = markedImg.parse(input);
 
 			// Should include the 400w webp because it's a unique size
 			assert.match(output, /img\/pic__400-300\.webp 400w/);
 
 			// Should include the 800w jpg (original fallback) but omit the 800w webp
-			assert.match(output, /img\/pic__400-300-webp_800-600-webp_800-600\.jpg 800w/);
+			assert.match(output, /img\/pic__400-300-webp_800-600-webp~\.jpg 800w/);
 			assert.doesNotMatch(output, /800-600\.webp 800w/);
 		});
 	});
